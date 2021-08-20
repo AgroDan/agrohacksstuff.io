@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Cheatsheets on Agr0 Hacks Stuff</title>
+    <link>https://agrohacksstuff.io/cheatsheets/</link>
+    <description>Recent content in Cheatsheets on Agr0 Hacks Stuff</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 17 Aug 2021 17:24:41 -0500</lastBuildDate><atom:link href="https://agrohacksstuff.io/cheatsheets/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>User Account Control Lookup</title>
+      <link>https://agrohacksstuff.io/cheatsheets/uac/</link>
+      <pubDate>Tue, 17 Aug 2021 17:24:41 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/uac/</guid>
+      <description>I created a little web app useful for looking up the User Account Control values displayed in a standard LDAP query from Active Directory. Most of the time this integer is obscured from the viewer because Microsoft does the bitwise translation for you before presenting the values to you from the GUI, in a standard LDAP query this is displayed as just an integer.
+The tool I wrote can be accessed here: uac.</description>
+    </item>
+    
+    <item>
+      <title>My Docker Cheat Sheet</title>
+      <link>https://agrohacksstuff.io/cheatsheets/docker/</link>
+      <pubDate>Wed, 02 Jun 2021 09:49:02 -0400</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/docker/</guid>
+      <description>This is my docker cheat sheet. There are many like it, but this one is mine.
+I&amp;rsquo;m not about to teach anyone anything that they can&amp;rsquo;t find on Docker docs, in fact that&amp;rsquo;s probably where you should go if you don&amp;rsquo;t know much about Docker. But this is a publicized version of what I have in my notes that I use as a go-to when I can&amp;rsquo;t remember how I ran that one command I ran a few months ago on that host that&amp;hellip;man I can&amp;rsquo;t even remember the name of the host.</description>
+    </item>
+    
+    <item>
+      <title>My Advanced Bash Cheat Sheet</title>
+      <link>https://agrohacksstuff.io/cheatsheets/advbash/</link>
+      <pubDate>Wed, 17 Feb 2021 14:43:02 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/advbash/</guid>
+      <description>Here are some of the more &amp;ldquo;advanced&amp;rdquo; concepts of using Bash. This has more of a pentesting lean, since that&amp;rsquo;s kind of what I do. Still though, I&amp;rsquo;m sure a lot of people could take something out of this as well. But before I get into the really fun stuff, I need to outline some of the basics.
+Basic Bash Scripting Tricks You can set the output of a command to a variable by enclosing your command in $(dollar-parenthesis).</description>
+    </item>
+    
+    <item>
+      <title>Openssl</title>
+      <link>https://agrohacksstuff.io/cheatsheets/openssl/</link>
+      <pubDate>Wed, 27 Jan 2021 17:06:41 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/openssl/</guid>
+      <description>OpenSSL is one of those applications that I use so often, but rarely do I ever recall what I&amp;rsquo;m supposed to do from memory. I&amp;rsquo;m always looking it up or eventually copying down some of the more frequent uses I have with it in my OneNote document. So here it is on my site, some quick one-off commands with OpenSSL.
+Generate a Server Key To generate a server key (used in AES/RSA), use the following commands, and keep this key secure!</description>
+    </item>
+    
+    <item>
+      <title>My Bash Cheat Sheet</title>
+      <link>https://agrohacksstuff.io/cheatsheets/bash/</link>
+      <pubDate>Wed, 27 Jan 2021 17:06:02 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/bash/</guid>
+      <description>I use bash a lot. Say what you will of it, it&amp;rsquo;s a powerful shell. Sure I keep hearing that zsh is so much better, but I come from a system administrator background, so&amp;hellip;while I think Zsh is neat to use for your workstation, when I&amp;rsquo;m connecting to other servers and doing work there, the probability that bash is the default shell is pretty high. Luckily, bash has a ton of neat tricks that can help you out.</description>
+    </item>
+    
+  </channel>
+</rss>

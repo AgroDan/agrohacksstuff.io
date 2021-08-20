@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pythons on Agr0 Hacks Stuff</title>
+    <link>https://agrohacksstuff.io/python/</link>
+    <description>Recent content in Pythons on Agr0 Hacks Stuff</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 20 Feb 2021 14:59:00 -0500</lastBuildDate><atom:link href="https://agrohacksstuff.io/python/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PExpect, the Forgotten Module</title>
+      <link>https://agrohacksstuff.io/python/pexpect/</link>
+      <pubDate>Sat, 20 Feb 2021 14:59:00 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/python/pexpect/</guid>
+      <description>The title may be a bit exaggerated, but to be perfectly honest I feel that PExpect, the Python version of standard old Expect, is hardly ever mentioned in the many Infosec personalities I follow when they create an exploit or some sort of python script that interacts with a service or protocol. And that is a total shame, because pexpect is crazy powerful and probably one of the most useful modules I&amp;rsquo;ve ever come across.</description>
+    </item>
+    
+  </channel>
+</rss>

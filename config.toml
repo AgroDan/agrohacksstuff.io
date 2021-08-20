@@ -1,0 +1,35 @@
+baseURL = "https://agrohacksstuff.io"
+languageCode = "en-us"
+title = "Agr0 Hacks Stuff"
+theme = "hugo-theme-nix"
+
+[params]
+  Name = "Agr0"
+  HeaderUsername = "agr0"
+  HeaderHostname = "agrohacksstuff.io"
+  About = "I am a dev, a gamer, a hacker, an infosec geek, and a dad. These are my notes."
+  ProfilePicture = "/img/main/whoami.png"
+  Email = "9vmxhgqp6@relay.firefox.com"
+  GithubID = "AgroDan"
+  TwitterID = "agr0dan"
+
+[markup.goldmark.renderer]
+  unsafe=true
+
+[menu]
+  [[menu.header]]
+    name = "Python"
+    url = "/python"
+    weight = 0
+  [[menu.header]]
+    name = "Crypto"
+    url = "/crypto"
+    weight = 1
+  [[menu.header]]
+    name = "Cheat Sheets"
+    url = "/cheatsheets"
+    weight = 2
+  [[menu.header]]
+    name = "about"
+    url = "about"
+    weight = 3

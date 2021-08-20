@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Agr0 Hacks Stuff</title>
+    <link>https://agrohacksstuff.io/</link>
+    <description>Recent content on Agr0 Hacks Stuff</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 17 Aug 2021 17:24:41 -0500</lastBuildDate><atom:link href="https://agrohacksstuff.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>User Account Control Lookup</title>
+      <link>https://agrohacksstuff.io/cheatsheets/uac/</link>
+      <pubDate>Tue, 17 Aug 2021 17:24:41 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/uac/</guid>
+      <description>I created a little web app useful for looking up the User Account Control values displayed in a standard LDAP query from Active Directory. Most of the time this integer is obscured from the viewer because Microsoft does the bitwise translation for you before presenting the values to you from the GUI, in a standard LDAP query this is displayed as just an integer.
+The tool I wrote can be accessed here: uac.</description>
+    </item>
+    
+    <item>
+      <title>Cracking Easy Crypto</title>
+      <link>https://agrohacksstuff.io/crypto/easycrypto/</link>
+      <pubDate>Sun, 04 Jul 2021 05:00:00 -0400</pubDate>
+      
+      <guid>https://agrohacksstuff.io/crypto/easycrypto/</guid>
+      <description>On any given CTF where crypto is involved, I almost always see basically the same challenge every time. You are given a background on how you&amp;rsquo;ve intercepted the encryption oracle, but not the decryption oracle, along with some ciphertext that you are instructed to decrypt somehow. Usually it goes something like this (and I&amp;rsquo;m drawing some parallels to a CTF challenge that is currently running right now, so I&amp;rsquo;m intentionally being vague):</description>
+    </item>
+    
+    <item>
+      <title>My Docker Cheat Sheet</title>
+      <link>https://agrohacksstuff.io/cheatsheets/docker/</link>
+      <pubDate>Wed, 02 Jun 2021 09:49:02 -0400</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/docker/</guid>
+      <description>This is my docker cheat sheet. There are many like it, but this one is mine.
+I&amp;rsquo;m not about to teach anyone anything that they can&amp;rsquo;t find on Docker docs, in fact that&amp;rsquo;s probably where you should go if you don&amp;rsquo;t know much about Docker. But this is a publicized version of what I have in my notes that I use as a go-to when I can&amp;rsquo;t remember how I ran that one command I ran a few months ago on that host that&amp;hellip;man I can&amp;rsquo;t even remember the name of the host.</description>
+    </item>
+    
+    <item>
+      <title>Bit Flipping</title>
+      <link>https://agrohacksstuff.io/crypto/bitflipping/</link>
+      <pubDate>Tue, 01 Jun 2021 05:00:00 -0400</pubDate>
+      
+      <guid>https://agrohacksstuff.io/crypto/bitflipping/</guid>
+      <description>Bit flipping is another one of those magical attack techniques that a lot of people seem to want to write off as &amp;ldquo;I think there&amp;rsquo;s a tool that does that automatically for you.&amp;rdquo; And yeah I&amp;rsquo;m sure there&amp;rsquo;s a bunch. The concept itself seems relatively straight forward. I mean, for the most part a bit can only be in one of two states, so just change a 1 to a 0 or vice versa.</description>
+    </item>
+    
+    <item>
+      <title>PyNigma, and How I Made It</title>
+      <link>https://agrohacksstuff.io/crypto/pynigma/</link>
+      <pubDate>Thu, 29 Apr 2021 12:00:00 -0400</pubDate>
+      
+      <guid>https://agrohacksstuff.io/crypto/pynigma/</guid>
+      <description>I&amp;rsquo;ve said this before through various iterations, but some people work on cars, some build models, I write code to imitate an old cipher device from World War II. While I&amp;rsquo;ve named this code &amp;ldquo;PyNigma,&amp;rdquo; it is perhaps a bit more like Typex considering the amount of rotors used in this process. When I designed this, I didn&amp;rsquo;t have any sort of intention on inventing something new, this was definitely a hobbyist project.</description>
+    </item>
+    
+    <item>
+      <title>Mersenne Twister Predictor In Action</title>
+      <link>https://agrohacksstuff.io/crypto/mt-in-action/</link>
+      <pubDate>Sun, 28 Mar 2021 11:52:00 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/crypto/mt-in-action/</guid>
+      <description>In a previous post, I explained the very broad mechanism of what to do to predict the Mersenne Twister pseudo-random number generator. I only posted the functions but never actually showed them in action. That said, I have spun up some proof-of-concept code to explain how it can be used in practice. Given 624 samples of extracted pseudo-random numbers from one seed, I can re-create the state array and predict every single number generated from this extraction.</description>
+    </item>
+    
+    <item>
+      <title>Pseudo Random Number Generators (and why you should tread lightly)</title>
+      <link>https://agrohacksstuff.io/crypto/mt/</link>
+      <pubDate>Sun, 21 Mar 2021 11:52:00 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/crypto/mt/</guid>
+      <description>I&amp;rsquo;ve always had some sort of weird nerdy interest in pseudo-random number generators. How is it that a computer, an object based solely on a deterministic approach to everything, can generate a number that is supposedly random? Well TL;DR, it simply can&amp;rsquo;t. Well, not without relying on external factors that are unreasonable to predict. One such example is Linux using things like timing of keystrokes and mouse movements, and other such readings from hard-to-predict motions of the internal mechanisms of the hard drive to generate enough entropy to generate a seed.</description>
+    </item>
+    
+    <item>
+      <title>PExpect, the Forgotten Module</title>
+      <link>https://agrohacksstuff.io/python/pexpect/</link>
+      <pubDate>Sat, 20 Feb 2021 14:59:00 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/python/pexpect/</guid>
+      <description>The title may be a bit exaggerated, but to be perfectly honest I feel that PExpect, the Python version of standard old Expect, is hardly ever mentioned in the many Infosec personalities I follow when they create an exploit or some sort of python script that interacts with a service or protocol. And that is a total shame, because pexpect is crazy powerful and probably one of the most useful modules I&amp;rsquo;ve ever come across.</description>
+    </item>
+    
+    <item>
+      <title>My Advanced Bash Cheat Sheet</title>
+      <link>https://agrohacksstuff.io/cheatsheets/advbash/</link>
+      <pubDate>Wed, 17 Feb 2021 14:43:02 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/advbash/</guid>
+      <description>Here are some of the more &amp;ldquo;advanced&amp;rdquo; concepts of using Bash. This has more of a pentesting lean, since that&amp;rsquo;s kind of what I do. Still though, I&amp;rsquo;m sure a lot of people could take something out of this as well. But before I get into the really fun stuff, I need to outline some of the basics.
+Basic Bash Scripting Tricks You can set the output of a command to a variable by enclosing your command in $(dollar-parenthesis).</description>
+    </item>
+    
+    <item>
+      <title>About Me</title>
+      <link>https://agrohacksstuff.io/about/</link>
+      <pubDate>Thu, 28 Jan 2021 17:05:25 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/about/</guid>
+      <description>My Name is Dan USA. Working in Information Security. White hat. Gamer. Dad. Views are my own. Though feel free to use my notes. I&amp;rsquo;m not going to pretend to have all the answers, but I took down a lot of notes and I feel like I should preserve them somehow.
+Thus: this site.
+I initially bought this site to host my 2020 Holiday Hack Challenge Writeup, and I figured that I was considering adding my notes to a public page, so why not?</description>
+    </item>
+    
+    <item>
+      <title>Openssl</title>
+      <link>https://agrohacksstuff.io/cheatsheets/openssl/</link>
+      <pubDate>Wed, 27 Jan 2021 17:06:41 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/openssl/</guid>
+      <description>OpenSSL is one of those applications that I use so often, but rarely do I ever recall what I&amp;rsquo;m supposed to do from memory. I&amp;rsquo;m always looking it up or eventually copying down some of the more frequent uses I have with it in my OneNote document. So here it is on my site, some quick one-off commands with OpenSSL.
+Generate a Server Key To generate a server key (used in AES/RSA), use the following commands, and keep this key secure!</description>
+    </item>
+    
+    <item>
+      <title>My Bash Cheat Sheet</title>
+      <link>https://agrohacksstuff.io/cheatsheets/bash/</link>
+      <pubDate>Wed, 27 Jan 2021 17:06:02 -0500</pubDate>
+      
+      <guid>https://agrohacksstuff.io/cheatsheets/bash/</guid>
+      <description>I use bash a lot. Say what you will of it, it&amp;rsquo;s a powerful shell. Sure I keep hearing that zsh is so much better, but I come from a system administrator background, so&amp;hellip;while I think Zsh is neat to use for your workstation, when I&amp;rsquo;m connecting to other servers and doing work there, the probability that bash is the default shell is pretty high. Luckily, bash has a ton of neat tricks that can help you out.</description>
+    </item>
+    
+  </channel>
+</rss>

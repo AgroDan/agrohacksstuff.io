@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> Bit Flipping &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/crypto/bitflipping/">Bit Flipping</a></h1>
+                <span class="post-date">2021-06-01 </span>
+                <div class="post-content">
+                    <p>Bit flipping is another one of those magical attack techniques that a lot of people seem to want to write off as &ldquo;I think there&rsquo;s a tool that does that automatically for you.&rdquo; And yeah I&rsquo;m sure there&rsquo;s a bunch. The concept itself seems relatively straight forward. I mean, for the most part a bit can only be in one of two states, so just change a 1 to a 0 or vice versa. And generally that&rsquo;s what you&rsquo;re doing in a bit flipping attack. But hopefully I can de-mystify the idea and offer a little more insight as to what you&rsquo;re doing, as well as hopefully help define the potential for a bit flipping attack in general.</p>
+<p>I am categorizing this as crypto since I am going to be bit flipping an actual ciphertext, but it could be argued that this is more or less a web exploitation attack as well.</p>
+<h1 id="giving-a-client-control">Giving a Client Control</h1>
+<p>Let&rsquo;s play the role of the web developer. I am a developer creating an application that requires authentication to some sort of widget. Can&rsquo;t let just anyone control the widget, so authentication is required. Now let&rsquo;s assume that a <em>ton</em> of people need to control the widget, and finally lets assume that a subset of those people need to have more control than others over said widget. So we have:</p>
+<ol>
+<li>A registration page</li>
+<li>A login page</li>
+<li>An authentication page (means to validate the login credentials)</li>
+<li>A widget page, where control of the widget occurs</li>
+<li>An admin page, where admins control the users and other similar tasks</li>
+</ol>
+<p>The login page accepts credentials, the authentication page validates credentials, and the widget page and admin page both utilize the credentials to determine if the client has access to the page. But how? Remember that websites are a stateless protocol, meaning the network-level &ldquo;session&rdquo; ends when the page stops loading. And on the lowest level, each new request made by the client is a brand new completely unrelated request to the server, and the web server will treat each new request as exactly that: brand new. So how does a web application retain things like authentication between each page request?</p>
+<p>Well, one simple method is to require authentication before each request. It&rsquo;s easiest from the server end, but a nightmare from the user experience end. Nobody likes logging into things! Enter: cookies.</p>
+<h2 id="would-you-like-to-view-our-cookie-policy">Would you like to view our Cookie Policy?</h2>
+<p>Cookies are getting kind of a bad rap on the internet. The <a href="https://gdpr-info.eu/">GDPR</a> has forced any site that uses cookies to disclose their cookie policy just so users have the capability of accessing what kind of cookies they will allow. There&rsquo;s an unfortunate side of cookies in that many of them serve as tracking mechanisms, allowing servers owned by entities with a vested interest in what <em>you</em> look at to document this information. But the necessary side of cookies can be used for things like session tracking and other similar actions.</p>
+<p>Remember that each new page request is essentially a brand new client making a brand new request to the server, and the server has no way (from the network level) to determine your level of access. Cookies are the answer to that. For each request a client makes to the server, the client can also send with them a cookie containing a unique number. The server can take that number, refer to a database which matches that number to a level of access, and now the server knows who you are as well as what level of access you have. It&rsquo;s that simple!</p>
+<p>Except that is a terrible idea. Cookies are stored locally to the client. And therefore, a client should have the ability to modify a cookie at will. Go ahead, try it out! Hit F12 to bring up the Developer Console, and (if you&rsquo;re using Chrome), go to Application &gt; Storage &gt; Cookies to access all the cookies your browser has stored. From there you can pick whatever field you&rsquo;d like to modify, make your change and refresh the page. If you&rsquo;re using Firefox like I am, hit F12, go to Storage &gt; Cookies. Your browser&rsquo;s developer tools are an incredible toolset to have when investigating websites and what they do.</p>
+<p>Alright, so back to authentication. Remember that I&rsquo;m dealing with a ton of people that would need access to this, so let&rsquo;s put aside the fact that a cookie can be modified and deal with the fact that for each and every single request going to the server, the server will need to take the resulting number returned from the cookie and perform a database lookup to determine this requester&rsquo;s access. This is a lot of work for any web server, so most developers simply put such data inside the cookie itself! Imagine if each cookie the client sent to the server simply contained the following data:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">username=agr0&amp;displayname=Dan&amp;admin=0&amp;otherdata=blah;
+</code></pre></div><p>The server can simply read the cookie and determine their access. No need to look anything up in a database for each request, it&rsquo;s right there in the cookie. But how can a cookie be trusted? A user can modify their cookies at will, so what can a server do to trust this data? I mean all I&rsquo;d need to do is set the value of &ldquo;admin=0&rdquo; to &ldquo;admin=1&rdquo; and I&rsquo;d call that a win. What most developers do is they encrypt the cookie somehow and send the [typically base64-encoded] ciphertext as the cookie contents. This way the server holds onto the encryption key. The key would ideally never be exposed, and the client can&rsquo;t modify the ciphertext simply because the client won&rsquo;t know how to decrypt it to modify it further. Done and done! This way you can have the clients store their own rights and not have to worry that they will manipulate the data, since they can&rsquo;t decrypt the ciphertext!</p>
+<h1 id="how-to-hack-this">How to Hack This</h1>
+<p>Well first of all, the quickest win in this scenario is to register a user, then set the display name to something like <code>hahapwnedyou&amp;admin=1;</code> and hope for the best. But let&rsquo;s assume that the application is smart enough to disallow special characters like <code>&amp;</code> and <code>=</code> in things like the display name or username or something. Now you&rsquo;re left with a bit of a pickle. You&rsquo;ve got the ciphertext that you can&rsquo;t decrypt, and you can&rsquo;t inject special characters. You&rsquo;re left with simply modifying the ciphertext if you want to get in. But wait, the cookie is encrypted. Can we modify the ciphertext somehow?</p>
+<p>Yes!</p>
+<p>Enter: Bit Flipping. The arbitrary manipulation of bytes within a ciphertext to see if the <em>smallest change</em> can actually accomplish something noteworthy. In this case, given the above cookie, it looks like the only thing I will need to manipulate is the second zero, changing <code>admin=1</code> should suffice, no?</p>
+<p>In the essence of bit flipping, this is basically what we&rsquo;re doing. I&rsquo;m going to traverse through every single byte in the ciphertext, modify the byte in small increments until I&rsquo;ve tried every possible combination of 1&rsquo;s and 0&rsquo;s in the byte, and see how the server responds.</p>
+<h1 id="how-does-a-server-respond-to-pressure">How does a server respond to pressure?</h1>
+<p>Now nobody is asking that you DoS the server with a million responses to bring it to its knees. In fact that is the last thing you want to do with a bit flipping attack. You want to generate just as much traffic to be thorough, but not so much as to raise any eyebrows. You are after all sending a bunch of garbage data to the server, and the server will respond in kind. What happens to the application if you send it ciphertext that it can&rsquo;t decrypt? What happens if it attempts to decrypt it and it&rsquo;s peppered in some weird control characters? What happens if it tries to decrypt the client cookie and it decrypts to something like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">username=agr0&amp;displayname=D\xfen&amp;admin=0&amp;otherdata=blah;
+</code></pre></div><p>Well, in most cases you can expect the server to respond with a <code>500 Internal Server Error</code>, where not even the server knows how to handle your request. In fact the server will most likely dump the traceback into the server logs for the admin to review. So you&rsquo;ll leave quite a bit of a footprint in the process if you are successful, but believe it or not, a 500 Internal Server Error is a good thing for you, the attacker. This is known as a <strong>side channel attack</strong>. Where you have a server giving you some indication that either something went wrong (500 error), or something went &ldquo;ok&rdquo; (200 OK). You can use this to determine if you&rsquo;re at least on the right track.</p>
+<h1 id="an-example-picoctf-2021-more-cookies">An Example: PicoCTF 2021, &ldquo;More Cookies&rdquo;</h1>
+<p>Given the &ldquo;More Cookies&rdquo; challenge, I&rsquo;m handed a cookie containing Base64-encoded ciphertext, and told that &ldquo;only the admin can use it.&rdquo; This is telling me that somewhere in the below ciphertext, the string <code>admin=0</code> exists. And to that end, without having the ability to decrypt the ciphertext myself, all I&rsquo;d like to do is change that <code>0</code> to a <code>1</code>. And to accomplish that, first I&rsquo;ll have to check every single byte, modify it by one, and check to see how the application reacts.</p>
+<p><img src="/img/bitflipping/picoctf-morecookies.png#center" alt="More Cookies"></p>
+<p>First, some boilerplate header stuff for this challenge:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">import</span> requests
+<span style="color:#f92672">import</span> base64
+
+cipher <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;alFwUGdQL3hlM0F3YmdOS2FhclZNMjcwZ0pCSkFoUnk3djhPYyt4M05yT2tqV0NBc09KRmRIbFhjWTZjNll5dFQ0MlJUbE1EK1VTa2dpVmVtWmZ6VU1qZ1cxbHgvVC9QUGFXUS9MVXQ5RGRBMzBiZlpFTDBRQ1pqYnowYjVYbUg=&#34;</span>
+url <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;http://mercury.picoctf.net:56136/&#34;</span>
+</code></pre></div><p>Now the function which actually bit-flips. Given a specific number, a position, and the ciphertext, all this does is add to the byte at the provided position and modulos it by 256 (ensuring we have a valid byte, as &gt;256 would throw an error), then converts it back to a bytestring and base64-encodes it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">bitflip</span>(bit, pos, ciphertext):
+    l <span style="color:#f92672">=</span> list(base64<span style="color:#f92672">.</span>b64decode(ciphertext))
+    flipped <span style="color:#f92672">=</span> (bit <span style="color:#f92672">+</span> l[pos])<span style="color:#f92672">%</span><span style="color:#ae81ff">256</span>
+    l[pos] <span style="color:#f92672">=</span> flipped
+    <span style="color:#66d9ef">return</span> base64<span style="color:#f92672">.</span>b64encode(bytes(l))
+</code></pre></div><p>The next step here is to simply try every single byte within the ciphertext, try every single possible bit permutation of each byte, and review how the server reacts to each one. In most cases, the server will respond with a 500 server error, but in this particular case, the server is nice enough to respond with a very telling response of &ldquo;Cannot decode auth_key&rdquo; or something similar. So that said, using the following code, I can create a <code>possibilities</code> list of bits I flipped at specific positions where the server <em>did not</em> respond with an error message stating that it couldn&rsquo;t decode the key, and review that for further analysis. This code loops through each bit permutation for each byte in the ciphertext, re-builds the cookie and simply executes a GET request with the new cookie, and tosses out the requests that throw an error:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">possibilities <span style="color:#f92672">=</span> []
+
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">256</span>):
+    <span style="color:#66d9ef">for</span> j <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, len(base64<span style="color:#f92672">.</span>b64decode(cipher))):
+        a <span style="color:#f92672">=</span> bitflip(i, j, cipher)
+        cookies <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#34;auth_name&#34;</span>: a<span style="color:#f92672">.</span>decode() }
+
+        r <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>get(url, cookies<span style="color:#f92672">=</span>cookies)
+
+        <span style="color:#66d9ef">if</span> <span style="color:#e6db74">&#34;Cannot decode&#34;</span> <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> r<span style="color:#f92672">.</span>text:
+            possibilities<span style="color:#f92672">.</span>append([i, j])
+</code></pre></div><p>The above code takes quite a bit to run through, as the ciphertext is 128 bytes long (and incidentally, is base64-encoded twice for some bizarre reason, but it shouldn&rsquo;t really matter considering what I&rsquo;m doing), and for each byte it iterates 256 times, causing 32,768 requests in total! Needless to say, this is a pretty noisy attack. Hopefully I can get through this without anyone taking notice!</p>
+<p>For the record, after this finishes, the <code>possibilities</code> list contains the following number combinations that it ran through the <code>bitflip()</code> function, and the server <em>didn&rsquo;t</em> return an error message:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">possibilities <span style="color:#f92672">=</span> [[<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">2</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">4</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">5</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">6</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">7</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">8</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">9</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">10</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">12</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">13</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">14</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">15</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">16</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">17</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">18</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">19</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">20</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">21</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">22</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">23</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">24</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">25</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">26</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">27</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">28</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">29</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">30</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">31</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">32</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">33</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">34</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">35</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">36</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">37</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">38</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">39</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">40</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">41</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">42</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">43</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">44</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">45</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">46</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">47</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">48</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">49</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">50</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">51</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">52</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">53</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">54</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">55</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">56</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">57</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">58</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">59</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">60</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">61</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">62</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">63</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">64</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">65</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">66</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">67</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">68</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">69</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">70</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">71</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">72</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">73</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">74</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">75</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">76</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">77</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">78</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">79</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">80</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">81</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">82</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">83</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">84</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">85</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">86</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">87</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">88</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">89</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">90</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">91</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">92</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">93</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">94</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">95</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">96</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">97</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">98</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">99</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">100</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">101</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">102</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">103</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">104</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">105</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">106</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">107</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">108</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">109</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">110</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">111</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">112</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">113</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">114</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">115</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">116</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">117</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">118</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">119</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">120</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">121</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">122</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">123</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">124</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">125</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">126</span>], [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">127</span>], [<span style="color:#ae81ff">16</span>, <span style="color:#ae81ff">13</span>], [<span style="color:#ae81ff">28</span>, <span style="color:#ae81ff">15</span>], [<span style="color:#ae81ff">31</span>, <span style="color:#ae81ff">15</span>], [<span style="color:#ae81ff">35</span>, <span style="color:#ae81ff">15</span>], [<span style="color:#ae81ff">194</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">218</span>, <span style="color:#ae81ff">13</span>], [<span style="color:#ae81ff">227</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">234</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">234</span>, <span style="color:#ae81ff">13</span>], [<span style="color:#ae81ff">237</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">241</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">242</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">243</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">244</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">245</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">246</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">247</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">248</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">248</span>, <span style="color:#ae81ff">12</span>], [<span style="color:#ae81ff">249</span>, <span style="color:#ae81ff">11</span>], [<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">12</span>]]
+</code></pre></div><p>Based on the above, it might be fair to say that the first byte in the ciphertext is a red herring, and doesn&rsquo;t matter what character it is since it will still decode without a problem, judging by the fact that every single byte is represented here.</p>
+<p>The next step from here, once it&rsquo;s built out its list of possibilities, is to go through each possible iteration and determine which one is the outlier. The best course of action here is to find out the one request size that sticks out the most:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> possibilities:
+    a <span style="color:#f92672">=</span> bitflip(i[<span style="color:#ae81ff">0</span>], i[<span style="color:#ae81ff">1</span>], cipher)
+    cookies <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#34;auth_name&#34;</span>: a<span style="color:#f92672">.</span>decode() }
+    r <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>get(url, cookies<span style="color:#f92672">=</span>cookies)
+    <span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;Headers: {r.headers[&#39;Content-Length&#39;]}, bit={i[0]}, pos={i[1]}&#34;</span>)
+</code></pre></div><p>This will print out the response content length for each request we send it, now only limiting it to the contents of the <code>possibilities</code> list. I notice that a majority of requests return the same size bytestring&hellip;except for one in particular:</p>
+<p><img src="/img/bitflipping/picoctf-bitflipping.png#center" alt="One particular outlier"></p>
+<p><code>bit=16, pos=13</code></p>
+<p>Plugging these numbers into the <code>bitflip</code> function gives us one in particular:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">a <span style="color:#f92672">=</span> bitflip(<span style="color:#ae81ff">16</span>, <span style="color:#ae81ff">13</span>, cipher)
+cookies <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#34;auth_name&#34;</span>: a<span style="color:#f92672">.</span>decode()}
+r <span style="color:#f92672">=</span> requests<span style="color:#f92672">.</span>get(url, cookies<span style="color:#f92672">=</span>cookies)
+<span style="color:#66d9ef">print</span>(r<span style="color:#f92672">.</span>text)
+</code></pre></div><p>Printing the resulting HTML gives us&hellip;</p>
+<p><img src="/img/bitflipping/picoctf-pwned.png#center" alt="Pwned!"></p>
+<p>The flag! For all intents and purposes, I have successfully made myself an administrator by manipulating the cookie by changing one single byte. <code>admin</code> now officially equals <code>1</code>. I didn&rsquo;t have to decrypt anything, and in fact used a side channel attack to determine if I was on the right track. This was noisy, sure, but to be honest with you&hellip;this was easy mode. Sure, situations like this appear in the wild, but granted this is a bit contrived. The cookie was sent to my browser with the string <code>admin=0</code> already there. It is probably more realistic to assume that if the string <code>admin=1</code> appears anywhere in the cookie, then the user is an administrator, otherwise the user is not. Simple as that, and probably a bit easier to work with. That said, how can we bit flip something that simply isn&rsquo;t there? And to top it off, how can we do it <em>without pounding on the server?</em></p>
+<p>This is where we simply inject a little <em>finesse</em>.</p>
+<h1 id="cbc-bit-flipping-hard-mode">CBC Bit Flipping, Hard Mode</h1>
+<p>Try to stay with me now, this part requires a little bit more logical math.</p>
+<p>First, let&rsquo;s establish some ground rules as stated before. I&rsquo;m going to work with the following cookie from above, just without the <code>admin=0</code> part:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">username=agr0&amp;displayname=Dan&amp;otherdata=blah;
+</code></pre></div><p>Second, I&rsquo;m going to say that this cookie is encrypted using AES-128-CBC Encryption, meaning each block of 16 bytes is encrypted with a key, and the resulting ciphertext is XOR&rsquo;d with the next 16 bytes of plaintext before that gets encrypted. This cipher-block-chain mode continues until it gets to the end, where it finishes with enough padding to extend the plaintext out to be divisible by 16 bytes.</p>
+<p>It&rsquo;s obvious that I can manipulate some of this beforehand, notably the <code>displayname</code> variable. Now the third attribute: to ensure that someone can&rsquo;t just go ahead and add <code>Dan&amp;admin=1</code> as their display name, as specified earlier, special characters like <code>&amp;</code> and <code>=</code> will not be allowed in the display name field, or they will at least be escaped. This creates a bit of a barrier, since we can&rsquo;t just flip a single byte anymore. Now we have to somehow add <code>&amp;admin=1</code> to the string and bypass the special character filter, but first it&rsquo;s somewhat important to understand how CBC decryption works.</p>
+<p><img src="/img/bitflipping/cbc-decryption.png#center" alt="CBC Decryption"></p>
+<p>Here, take note that in CBC Decryption, the ciphertext is split into 16-byte blocks as is expected, and each ciphertext block is used to XOR against the decrypted result of <em>next</em> block. This is important, because we&rsquo;re going to use this to manipulate the cookie data!</p>
+<p>Now to attack, I&rsquo;ve got to create a payload that works for this particular cookie string. So I&rsquo;ve come up with the following cookie by manipulating the <code>displayname</code> variable from the application with the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">username=agr0&amp;displayname=Dan,admin,1&amp;otherdata=blah
+</code></pre></div><p>Mind you, this is only what I <em>assume</em> the cookie looks like. When I change my displyname to <code>Dan,admin,1</code> I am only presented with this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">hkrG5iZbiIDMOh97+n0uHPVqGtLqdhhCpgJ/r/5RUOukzICr21hBzVquTvW89HPs5pW/lI8m2RQeHnyaUQ1uJA==
+</code></pre></div><p>The <code>==</code> sign on the end denotes that this is Base64 encoded, and completely encrypted. I can convert that to something a bit more workable, so using cyberchef I can convert it to hex, which has an easier-to-work-with characteristic of 2 hex characters being equal to one byte:</p>
+<p><img src="/img/bitflipping/cbc-cyberchefconvert.png#center" alt="Converted to Hex"></p>
+<p>Now with that, I can deduce the following if I split the above ciphertext by 16 bytes (or technically, 32 hex characters):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">  Encrypted Ciphertext in Hex    ||| Assumed plaintext
+======================================================
+864ac6e6265b8880cc3a1f7bfa7d2e1c ==&gt; username=agr0&amp;di
+f56a1ad2ea761842a6027faffe5150eb ==&gt; splayname=Dan,ad
+a4cc80abdb5841cd5aae4ef5bcf473ec ==&gt; min,1&amp;otherdata=
+e695bf948f26d9141e1e7c9a510d6e24 ==&gt; blahCCCCCCCCCCCC
+</code></pre></div><p>To make this easier to work with (and thus manipulate), I will increase the size of my displayname to push the <code>,admin,1</code> bit to another block. How about a displayname more like <code>AAAAAAAAAAAAAAAAAAAAAA,admin,1</code>? Personally I think it tends to roll off the tongue better than regular old &ldquo;Dan.&rdquo;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">  Encrypted Ciphertext in Hex    ||| Assumed plaintext
+======================================================
+864ac6e6265b8880cc3a1f7bfa7d2e1c ==&gt; username=agr0&amp;di
+f4da7e843d226ce5fc522c02f042104e ==&gt; splayname=AAAAAA
+8ebe2590ef24dc7862c6824141f96eb5 ==&gt; AAAAAAAAAAAAAAAA
+7387842f0969fbddf0f7e2db1b279961 ==&gt; ,admin,1&amp;otherda
+b8ce36acffea4e5402487274bbfca37c ==&gt; ta=blah999999999
+</code></pre></div><p>Note the 9s on the end to indicate the padding this application created to ensure that the data is divisible by 16. According to the PCKS#7 padding standard, the last block of data should be padded to be divisible by 16 with the number of bytes needed to complete the padding. If the data is divisible by 16 already, an additional block <strong>must</strong> be created of nothing but characters denoting 16 bytes of padding.</p>
+<p>Now, let&rsquo;s focus on the two lines of the above that are of the most interest to me. Specifically these: (I bracketed the bytes in these blocks that I really care about)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">[8e] be2590ef24dc7862c6824141f96eb5 ==&gt; [A] AAAAAAAAAAAAAAA
+[73] 87842f0969fbddf0f7e2db1b279961 ==&gt; [,] admin,1&amp;otherda
+</code></pre></div><p>Remember that in CBC decryption, the ciphertext is XOR&rsquo;d with the next <em>decrypted</em> block to produce the plaintext. In other words, the first byte <code>0x8e</code> is XOR&rsquo;d with <em>something</em> to produce <code>0x2c</code>, or a literal comma (,). XOR works on a relationship of threes, so we can basically find that &ldquo;something&rdquo; out for ourselves:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Remember, all in Hex:
+
+8E ^ 2C = A2
+</code></pre></div><p>So now we know that the decrypted data <em>before being XOR&rsquo;d</em> is <code>0xa2</code>. Okay&hellip;so what? Well, again, XOR works on a relationship of threes, so if we know that <code>0x73</code> will decrypt to <code>0xa2</code> before it gets XOR&rsquo;d with <code>0x8e</code> producing the comma, then how can we change <code>0xa2</code> to instead XOR to an ampersand (&amp;)? Simple: XOR it with an ampersand!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">h <span style="color:#f92672">=</span> hex(<span style="color:#ae81ff">0xa2</span> <span style="color:#f92672">^</span> ord(<span style="color:#e6db74">&#39;&amp;&#39;</span>))
+</code></pre></div><p>In this case, <code>h = 0x84</code>.</p>
+<p>So now, if we manipulate the encrypted cookie to change <code>0x8e</code> instead to <code>0x84</code>, it should XOR to <code>0x26</code>, or a literal ampersand (&amp;)!</p>
+<p>We can perform the same logic to the following bytes as well:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">8ebe2590ef24 [dc] 7862c6824141f96eb5 ==&gt; AAAAAA [A] AAAAAAAAA
+7387842f0969 [fb] ddf0f7e2db1b279961 ==&gt; ,admin [,] 1&amp;otherda
+</code></pre></div><p><code>0xdc</code> XOR&rsquo;d with a literal comma, or <code>ord(',')</code> or <code>0x2c</code>, equals <code>0xf0</code>! So if we XOR <code>0xf0</code> with the ordinal for an equal sign (<code>ord('=') = 0x3d</code>), we get <code>0xcd</code>!</p>
+<p>So we can rebuild the above ciphertext to the following, where I&rsquo;ve highlighted my changes, and added question marks because who knows what this will decrypt to:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">  Encrypted Ciphertext in Hex    ||| Assumed plaintext
+==============================================================
+864ac6e6265b8880cc3a1f7bfa7d2e1c        ==&gt; username=agr0&amp;di
+f4da7e843d226ce5fc522c02f042104e        ==&gt; splayname=AAAAAA
+[84] be2590ef24 [cd] 7862c6824141f96eb5 ==&gt; ????????????????
+7387842f0969fbddf0f7e2db1b279961        ==&gt; ,admin,1&amp;otherda
+b8ce36acffea4e5402487274bbfca37c        ==&gt; ta=blah999999999
+</code></pre></div><p>With a little cyberchef magic, I can check my work&hellip;(and ignore the fact that I have the key for this encryption, this is a contrived example after all)</p>
+<p><img src="/img/bitflipping/cbc-cyberchef.png#center" alt="Cyberchef is the greatest tool ever"></p>
+<p>Pwned! Admin=1! And it only took me one request to the server!</p>
+<h1 id="bro-do-you-even-hmac">Bro, do you even HMAC?</h1>
+<p>So now that we know how to exploit this, how do we prevent this from happening in the first place? Well, there is definitely more than one way to skin this cat, but my personal favorite is the usage of the HMAC, or Hash-based Message Authentication Code. The extremely high-level idea is you take the entirety of the encrypted cookie, prepend a known key to the beginning of it that only the server knows, hash the result of this new string using something like SHA-256, then hash the result of the hash with the key <em>again</em>. The resulting hash should then be tacked on to the ciphertext in the cookie. Then before working with the cookie in any capacity, you always validate the integrity of the cookie by repeating the process with the given ciphertext (minus the HMAC at the end), and comparing the result with the given HMAC that the client provided for you to determine whether or not the ciphertext was manipulated in transit in any way. If so, cease all further calculation and throw an invalidated ciphertext error. Or even better, fail silently so as to not let the attacker know that they failed the HMAC validation, because there is no reason to give the attacker any more information via side channels.</p>
+<h1 id="final-thoughts">Final Thoughts</h1>
+<p>When is encrypted data really encrypted? Sometimes it&rsquo;s not the key that needs to be protected, but the ciphertext itself. Users should never be trusted to handle their own data, and if it has to be the case, ensure that proper data validation techniques are employed. <strong>TRUST BUT VERIFY</strong>. Really, this should apply to more than just encryption, but life in general.</p>
+<p>Just a thought.</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

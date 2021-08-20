@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> User Account Control Lookup &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/cheatsheets/uac/">User Account Control Lookup</a></h1>
+                <span class="post-date">2021-08-17 </span>
+                <div class="post-content">
+                    <p>I created a little web app useful for looking up the User Account Control values displayed in a standard LDAP query from Active Directory. Most of the time this integer is obscured from the viewer because Microsoft does the bitwise translation for you before presenting the values to you from the GUI, in a standard LDAP query this is displayed as just an integer.</p>
+<p>The tool I wrote can be accessed here: <a href="https://uac.agrohacksstuff.io/">uac.agrohacksstuff.io</a>.</p>
+<p>This is particularly useful if you are on an engagement on a non-windows machine and you are investigating artifacts in AD. While most scripts will perform this translation for you, this serves as just a quick review of an account from LDAP to determine particularly alarming/interesting values such as <code>DONT_REQ_PREAUTH</code> or <code>TRUSTED_FOR_DELEGATION</code>. I couldn&rsquo;t find any quick wins in a language that I had easy access to (python, that is), so I not only wrote it in python, but also made it a web app that anyone can use.</p>
+<p>This value is actually a series of flags as bits, which can more accurately be represented as an integer. Where <code>10010</code> in binary is <code>18</code> in decimal and can be represented as such, Microsoft treats this value as a series of flags, where the first <code>1</code> on the left in the bit-string is the <code>LOCKOUT</code> flag, and the second-to-last bit is the <code>ACCOUNTDISABLE</code> flag, so a UAC value of <code>10010</code> has two flags, <code>[LOCKOUT, ACCOUNTDISABLE]</code>. Specifically, the list of values from the script are written as such:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">uacTable <span style="color:#f92672">=</span> { <span style="color:#ae81ff">1</span>: <span style="color:#e6db74">&#34;SCRIPT&#34;</span>,
+             <span style="color:#ae81ff">2</span>: <span style="color:#e6db74">&#34;ACCOUNTDISABLE&#34;</span>,
+             <span style="color:#ae81ff">8</span>: <span style="color:#e6db74">&#34;HOMEDIR_REQUIRED&#34;</span>,
+             <span style="color:#ae81ff">16</span>: <span style="color:#e6db74">&#34;LOCKOUT&#34;</span>,
+             <span style="color:#ae81ff">32</span>: <span style="color:#e6db74">&#34;PASSWD_NOTREQD&#34;</span>,
+             <span style="color:#ae81ff">64</span>: <span style="color:#e6db74">&#34;PASSWD_CANT_CHANGE&#34;</span>,
+             <span style="color:#ae81ff">128</span>: <span style="color:#e6db74">&#34;ENCRYPTED_TEXT_PWD_ALLOWED&#34;</span>,
+             <span style="color:#ae81ff">256</span>: <span style="color:#e6db74">&#34;TEMP_DUPLICATE_ACCOUNT&#34;</span>,
+             <span style="color:#ae81ff">512</span>: <span style="color:#e6db74">&#34;NORMAL_ACCOUNT&#34;</span>,
+             <span style="color:#ae81ff">2048</span>: <span style="color:#e6db74">&#34;INTERDOMAIN_TRUST_ACCOUNT&#34;</span>,
+             <span style="color:#ae81ff">4096</span>: <span style="color:#e6db74">&#34;WORKSTATION_TRUST_ACCOUNT&#34;</span>,
+             <span style="color:#ae81ff">8192</span>: <span style="color:#e6db74">&#34;SERVER_TRUST_ACCOUNT&#34;</span>,
+             <span style="color:#ae81ff">65536</span>: <span style="color:#e6db74">&#34;DONT_EXPIRE_PASSWORD&#34;</span>,
+             <span style="color:#ae81ff">131072</span>: <span style="color:#e6db74">&#34;MNS_LOGON_ACCOUNT&#34;</span>,
+             <span style="color:#ae81ff">262144</span>: <span style="color:#e6db74">&#34;SMARTCARD_REQUIRED&#34;</span>,
+             <span style="color:#ae81ff">524288</span>: <span style="color:#e6db74">&#34;TRUSTED_FOR_DELEGATION&#34;</span>,
+             <span style="color:#ae81ff">1048576</span>: <span style="color:#e6db74">&#34;NOT_DELEGATED&#34;</span>,
+             <span style="color:#ae81ff">2097152</span>: <span style="color:#e6db74">&#34;USE_DES_KEY_ONLY&#34;</span>,
+             <span style="color:#ae81ff">4194304</span>: <span style="color:#e6db74">&#34;DONT_REQ_PREAUTH&#34;</span>,
+             <span style="color:#ae81ff">8388608</span>: <span style="color:#e6db74">&#34;PASSWORD_EXPIRED&#34;</span>,
+             <span style="color:#ae81ff">16777216</span>: <span style="color:#e6db74">&#34;TRUSTED_TO_AUTH_FOR_DELEGATION&#34;</span>,
+             <span style="color:#ae81ff">67108864</span>: <span style="color:#e6db74">&#34;PARTIAL_SECRETS_ACCOUNT&#34;</span>,
+            }
+</code></pre></div><p>You can access the source code <a href="https://github.com/AgroDan/uac_lookup">here</a>.</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

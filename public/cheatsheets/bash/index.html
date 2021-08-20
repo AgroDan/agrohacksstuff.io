@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> My Bash Cheat Sheet &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/cheatsheets/bash/">My Bash Cheat Sheet</a></h1>
+                <span class="post-date">2021-01-27 </span>
+                <div class="post-content">
+                    <p>I use bash a lot. Say what you will of it, it&rsquo;s a powerful shell. Sure I keep hearing that zsh is so much better, but I come from a system administrator background, so&hellip;while I think Zsh is neat to use for your workstation, when I&rsquo;m connecting to other servers and doing work there, the probability that bash is the default shell is pretty high. Luckily, bash has a ton of neat tricks that can help you out. You can find any number of bash cheat sheets out there, such as <a href="https://github.com/LeCoupa/awesome-cheatsheets/blob/master/languages/bash.sh">this one</a>, but these are the ones I use enough to commit them to muscle memory.</p>
+<p>I should also note that a lot of these are also available and working with zsh, though there are some slight differences in some fringe cases. Like <code>CTRL+U</code> for example.</p>
+<h2 id="key-binds">Key Binds</h2>
+<p>These are some <code>CTRL-&lt;key&gt;</code> keybinds that I frequently use:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">CTRL+C     # kills the process
+CTRL+U     # Deletes everything behind cursor
+CTRL+K     # Deletes everything from the cursor to the end of the line
+CTRL+Y     # Pastes the last thing removed (used frequently with CTRL+U)
+CTRL+Z     # stops the current process, can be restarted though (see later)
+CTRL+R     # reverse-search through command line history
+</code></pre></div><p>To that end, I use <code>CTRL+R</code> for a <em>ton</em> of things. When I first boot up my attack VM and want to connect to <a href="https://www.hackthebox.eu/">HackTheBox</a>, the first thing I need to do is connect to the VPN. I could always alias it, but instead I hit <code>CTRL+R</code>, then start typing &ldquo;sudo openvpn&rdquo; until the command I want to run appears, and then hit enter. Easy peasy.</p>
+<p>Another fun thing I tend to do is something like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">mkdir -p /usr/local/share/my_new_dir
+cd &lt;ALT+.&gt;
+</code></pre></div><p>The <code>ALT+.</code> keypress will print the last argument of the last command you executed. Hitting it again will choose the argument before that, and again it will show the last argument of the command <em>preceeding</em> that, all the way up your command history.</p>
+<h2 id="whoops-i-messed-up-that-last-command">Whoops, I messed up that last command</h2>
+<p>You can do a fairly quick command substitution of the previous command with carats. To run the command you just ran with a text substituion, you use <code>^replace_from^replace_to</code></p>
+<p>So for example, see how I can recover from a misspelled <code>cd</code> command:</p>
+<pre><code>agr0@ubuntu:~$ cd /usr/local/din/
+bash: cd: /usr/local/din/: No such file or directory
+agr0@ubuntu:~$ ^din^bin
+cd /usr/local/bin/
+agr0@ubuntu:/usr/local/bin$ 
+</code></pre><p>I used <code>^din^bin</code> to run the command I just ran but replaced the word &ldquo;din&rdquo; with &ldquo;bin&rdquo;. I don&rsquo;t see this documented in too many places.</p>
+<hr>
+<p>Sometimes when you mess up your previous command, you simply forgot to add a flag or something. Luckily bash (and zsh) has a handy reference to the last command you just ran: <code>!!</code></p>
+<p>This can come in handy if you, like most people, forget to prepend <code>sudo</code> to a command before you run it, as I do maybe 95% of the time:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">agr0@ubuntu:~$ apt update
+Reading package lists... Done
+E: Could not open lock file /var/lib/apt/lists/lock - open (13: Permission denied)
+E: Unable to lock directory /var/lib/apt/lists/
+agr0@ubuntu:~$ sudo !!
+sudo apt update
+Hit:1 http://us.archive.ubuntu.com/ubuntu focal InRelease
+Hit:2 http://security.ubuntu.com/ubuntu focal-security InRelease                       
+Hit:3 http://us.archive.ubuntu.com/ubuntu focal-updates InRelease 
+</code></pre></div><p>I&rsquo;ve seen people alias the word &ldquo;gah&rdquo; to <code>sudo !!</code>. I&rsquo;ve also seen some more vulgar aliases, but you get the idea.</p>
+<hr>
+<p>Similarly, the <code>!</code> prefix is a link to your command history. If you type a <code>!</code> and then another letter or few letters, like say &ldquo;cu&rdquo;, it will search back through your command history and find the most recent command that starts with the letters &ldquo;cu&rdquo; that it finds. So if you have that really giant curl command that you don&rsquo;t want to type out again but you know that was the last curl command you ran, you can do something like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">agr0@ubuntu:~$ !cu&lt;enter&gt;
+curl -k -XPOST -d &#34;user=admin&amp;password=12345&#34; http://127.0.0.1:5000
+</code></pre></div><hr>
+<p>That&rsquo;s most of the easy ones. There are so many neat things that bash can do that I feel like I&rsquo;m only scratching the surface. I will make another post about some more advanced uses of bash that I frequently use (or need some means of referring back to) in the near future.</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

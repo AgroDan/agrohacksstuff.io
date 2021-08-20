@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> Cracking Easy Crypto &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/crypto/easycrypto/">Cracking Easy Crypto</a></h1>
+                <span class="post-date">2021-07-04 </span>
+                <div class="post-content">
+                    <p>On any given CTF where crypto is involved, I almost always see basically the same challenge every time. You are given a background on how you&rsquo;ve intercepted the encryption oracle, but <em>not</em> the decryption oracle, along with some ciphertext that you are instructed to decrypt somehow. Usually it goes something like this (and I&rsquo;m drawing some parallels to a CTF challenge that is currently running right now, so I&rsquo;m intentionally being vague):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># You have intercepted the following encryption oracle from the enemy!</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encrypt</span>(msg):
+    <span style="color:#66d9ef">if</span> type(msg) <span style="color:#f92672">is</span> str:
+        msg <span style="color:#f92672">=</span> msg<span style="color:#f92672">.</span>encode()
+    res <span style="color:#f92672">=</span> [((b<span style="color:#f92672">*</span><span style="color:#ae81ff">963</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">2020</span>)<span style="color:#f92672">%</span><span style="color:#ae81ff">256</span> <span style="color:#66d9ef">for</span> b <span style="color:#f92672">in</span> msg]
+    <span style="color:#66d9ef">return</span>(bytes(res)<span style="color:#f92672">.</span>hex())
+</code></pre></div><p>Typically another file or something similar is accompanied with the ciphertext. In this case, the ciphertext is: <code>05d3d33444401cdf7d44c789c70f4496ba71eb44401cd344d3aed3eb0f0744e01cd3447dd34dbad3404434c77d7d8971ba1044df7d1244ca05d3ae447dd3ae4044ebd3ca</code>. Now do what you do, crypto-guru! Decrypt the code! This is typically marked as an easy challenge, and generally it is on the easier side to figure out, but for people brand new to the crypto game, challenges like this can be somewhat daunting. Like it or not, crypto usually has <em>some</em> form of math, and in this case we have some relatively compressed code involving math that we need to decipher. Before I go about figuring out what to do, let&rsquo;s break down the code bit by bit.</p>
+<h1 id="breaking-down-the-code">Breaking Down the Code</h1>
+<p>Let&rsquo;s analyze the above code section-by-section.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encrypt</span>(msg):
+    <span style="color:#66d9ef">if</span> type(msg) <span style="color:#f92672">is</span> str:
+        msg <span style="color:#f92672">=</span> msg<span style="color:#f92672">.</span>encode()
+</code></pre></div><p>Some boilerplate stuff. Declare the function, and if the parameter is a string, then encode it to a bytestring. Nothing too fancy here.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">res <span style="color:#f92672">=</span> [((b<span style="color:#f92672">*</span><span style="color:#ae81ff">963</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">2020</span>)<span style="color:#f92672">%</span><span style="color:#ae81ff">256</span> <span style="color:#66d9ef">for</span> b <span style="color:#f92672">in</span> msg]
+</code></pre></div><p>This is a bit more involved. Lots of stuff happening on just one line. There&rsquo;s some math stuff around a list generator. The <code>for b in msg</code> basically means that for every character in the <code>msg</code> variable, assign the character to the variable <code>b</code> and <em>do stuff to it</em>. So let&rsquo;s break it down by a little Order of Operations magic. Please Excuse My Dear Aunt Sally!</p>
+<p><code>(b*963)</code></p>
+<p>Multiply the character by <code>963</code>, and since we&rsquo;re dealing with a byte string, the &ldquo;character&rdquo; is actually just an integer from 0 to 255. So if the character is <code>A</code>, the ordinal of <code>A</code> in UTF-8 is 65. So in this case, 65*963 equals 62595. For simplicity&rsquo;s sake, I&rsquo;ll replace <code>(b*963)</code> with <code>(62595)</code>.</p>
+<p><code>((62595)+2020)</code></p>
+<p>Now just add 2020 to the result to get <code>64615</code>. I&rsquo;ll refer to <code>((b*963)+2020)</code> as <code>64615</code> now:</p>
+<p><code>(64615)%256</code></p>
+<p>Modulo the result by 256, which becomes <code>103</code>.</p>
+<p>Modulo is a pretty fundamental calculation when dealing with crypto. In this case it performs two things: It ensures that the resulting number will be within the range of 0 to 255, as well as makes it extremely difficult to reverse! You&rsquo;re limiting the range of output, but how can you tell that <code>103</code> somehow translates from <code>65</code>? Well, you know that 65 becomes 103 through this process, but given the ciphertext, how can you take each byte and reverse it back if there&rsquo;s a modulo calculation involved?</p>
+<p>Finally, there&rsquo;s the return value:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">return</span>(bytes(res)<span style="color:#f92672">.</span>hex())
+</code></pre></div><p>It simply take the list, converts it to a bytestring, then converts the whole thing into a printable hex string.</p>
+<p>There might be some mathematical way to reverse the output, but I don&rsquo;t know it (and if I find out how I&rsquo;ll edit this document). However I do know how to cheat this anyway. Come on along with me!</p>
+<h1 id="analyzing-the-ciphertext">Analyzing the Ciphertext</h1>
+<p>The first thing I&rsquo;m going to do is write the ciphertext to a file for easier use. I created <code>msg.enc</code> and added the hex string there. My goal here is to try and find out <em>what kind of data I&rsquo;m working with</em>. There is a neat algorithm called the <a href="https://en.wikipedia.org/wiki/Diversity_index">Shannon Diversity Index</a> which determines the entropy of the specified data to build a histogram of the bytes included and give a representation of what kind of data we&rsquo;re looking at here, even if it&rsquo;s supposedly &ldquo;encrypted.&rdquo; While this is definitely encrypted, it does have a pretty nasty weakness: If you encrypt the same byte over and over again, it will spit out the exact same ciphertext without any difference:</p>
+<p><img src="/img/easycrypto/repeated.png#center" alt="Repeated Ciphertext"></p>
+<p>So basically what we&rsquo;re dealing with is in essence a substitution cipher! Every character in UTF-8 can be represented by another byte. Now there may be a little bit of overlap where two bytes may translate to the same byte, but it hopefully doesn&rsquo;t happen that often. Regardless, I can run this ciphertext through the Entropy function in Cyberchef to get a feel for what we&rsquo;re working with (and confirm my suspicion):</p>
+<p><img src="/img/easycrypto/shannon_ent.png#center" alt="Shannon Distribution Index"></p>
+<p>And for the sake of being thorough, I can do the same thing using the <code>ent</code> command&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">╭─agr0@agr0hacksstuff ~/Documents/easycrypto 
+╰─$ cat msg.enc | xxd -r -p | ent
+Entropy = 3.993970 bits per byte.
+
+Optimum compression would reduce the size
+of this 68 byte file by 50 percent.
+
+Chi square distribution for 68 samples is 1422.82, and randomly
+would exceed this value less than 0.01 percent of the times.
+
+Arithmetic mean value of data bytes is 126.3971 (127.5 = random).
+Monte Carlo value for Pi is 2.909090909 (error 7.40 percent).
+Serial correlation coefficient is -0.138111 (totally uncorrelated = 0.0).
+</code></pre></div><p>So there we go, the Shannon Index shows this ciphertext as 3.99, where common english falls somewhere between 3.5 and 5. If this byte string were <em>truly</em> random with no patterns to work with, it would fall somewhere above 7.5. It determines this by using the frequency of bytes and where they fall in terms of repetition. The more characters to work with, the more accurrate this will be, but considering there are several bytes re-used we can reasonably determine that this will decrypt to readable text. And for more information, we can use the &ldquo;Frequency Distribution&rdquo; recipe from Cyberchef to see the actual re-use of the bytes included:</p>
+<p><img src="/img/easycrypto/frequency_dist.png#center" alt="Frequency Distribution"></p>
+<p>DARK MODE ALL THE THINGS</p>
+<p>Take note of the statistics I highlighted at the bottom there. 68 bytes of data, yet only 22 bytes are represented. Definitely some repetition here. Histograms are a really neat tool for crypto.</p>
+<h1 id="sonow-what">So&hellip;now what?</h1>
+<p>Now we know that it&rsquo;s just a relatively simple substitution cipher. So how do we combat a non-shifting substitution cipher? We create a translation table! Let each encrypted byte equal another and compare the two. We&rsquo;ll encrypt a charset, then take the resulting ciphertext and map out each byte. Then we simply compare the ciphertext we&rsquo;re trying to crack with the lookup table we created, and if everything works &ndash; boom, we&rsquo;ll have decrypted it.</p>
+<p>First, let&rsquo;s create a translation table.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">charset <span style="color:#f92672">=</span> [i <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">255</span>)]
+encrypted_charset <span style="color:#f92672">=</span> bytes<span style="color:#f92672">.</span>fromhex(encrypt(bytes(charset)))
+</code></pre></div><p>Step 1: create a list of integers ranging from 0 to 255. So: charset[0] = 0, charset[1] = 1, etc</p>
+<p>Step 2: Create a variable <code>encrypted_charset</code> where the list is condensed into a bytestring and then encrypted with the same <code>encrypt()</code> function that we have. The <code>fromhex()</code> function is just to handle the hex encoding that the function returns.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">translation_table <span style="color:#f92672">=</span> {}
+<span style="color:#66d9ef">for</span> i,c <span style="color:#f92672">in</span> enumerate(encrypted_charset):
+    translation_table[c] <span style="color:#f92672">=</span> chr(charset[i])
+</code></pre></div><p>Step 3: Create an empty dictionary named <code>translation_table</code>.</p>
+<p>Step 4: Iterate over each byte in the <code>encrypted_charset</code> list, and assign the byte to the associated byte in the <code>charset</code> list. So now we have a dictionary lookup table. So I can now loop over each byte in the ciphertext and compare it to the translation table. So if the first byte is <code>0x05</code>, I can find out what that translates to by referencing <code>translation_table[0x05]</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">ciphertext <span style="color:#f92672">=</span> bytes<span style="color:#f92672">.</span>fromhex(<span style="color:#e6db74">&#39;05d3d33444401cdf7d44c789c70f4496ba71eb44401cd344d3aed3eb0f0744e01cd3447dd34dbad3404434c77d7d8971ba1044df7d1244ca05d3ae447dd3ae4044ebd3ca&#39;</span>)
+
+res <span style="color:#f92672">=</span> [translation_table[c] <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> ciphertext]
+
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;&#39;</span><span style="color:#f92672">.</span>join(res))
+</code></pre></div><p>Step 5: Take the ciphertext and store it as a variable (after we convert it from hex to a bytestring).</p>
+<p>Step 6: For every byte in the ciphertext variable, look up the byte against the translation table, and store the result.</p>
+<p>Step 7: Using python&rsquo;s admittedly-stupid join function, print the results of each lookup. The result?</p>
+<p><code>Keep this away from the enemy! The secret password is: &quot;Ken sent me&quot;</code></p>
+<p>Ta-daaaa!</p>
+<h1 id="an-alternate-solution">An Alternate Solution</h1>
+<p>Instead of the translation table, we can go another route: reverse-engineering the encryption function and brute forcing the number required to reverse the output. How do we brute force? Well take what we currently know by analyzing the ciphertext: The result will be human-readable text, and for the record based on other side-channel information leakage, we can also surmise that the text that is encrypted is a specific language (in this case, and for simplicity&rsquo;s sake, English). So therefore, we can assume that the resulting bytes will all be human-readable. This literally translates to just checking to make sure that all the bytes fall under 127, since the ASCII table only goes up to 127. Beyond that you have your extended ASCII table, featuring weird symbols and stuff not easy to type.</p>
+<p>So based on the above, I wrote two functions:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">is_printable</span>(char):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        Given a single byte, will determine if it falls within
+</span><span style="color:#e6db74">        the printable characters scale
+</span><span style="color:#e6db74">        returns: bool
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">if</span> char <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">127</span>:
+        <span style="color:#66d9ef">return</span> False
+    <span style="color:#66d9ef">return</span> True
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">all_is_printable</span>(msg):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        Checks if all bytes in msg are printable
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">if</span> type(msg) <span style="color:#f92672">is</span> str:
+        msg <span style="color:#f92672">=</span> msg<span style="color:#f92672">.</span>encode()
+    <span style="color:#66d9ef">for</span> b <span style="color:#f92672">in</span> msg:
+        <span style="color:#66d9ef">if</span> is_printable(b):
+            <span style="color:#66d9ef">continue</span>
+        <span style="color:#66d9ef">else</span>:
+            <span style="color:#66d9ef">return</span> False
+    <span style="color:#66d9ef">return</span> True
+</code></pre></div><p>Two functions which kinda build on top of each other. You have <code>is_printable()</code> which simply takes the character given to it and checks if the ordinal of that character is less than 127, and <code>all_is_printable()</code> which takes a full sentence (or bytestring) and checks if every single byte is printable. If one single byte is not printable it returns <code>False</code> and we can assume that the entire string is not valid. Given that because of the result of the Shannon Index stated that the ciphertext is most likely printable characters, we can assume that this particular check is worthwhile.</p>
+<p>That said, now we have a means of brute-forcing. If we can run a bunch of attempts through this <code>all_is_printable()</code> function, then we can technically find out what the key to decrypting is simply by reverse-engineering the function and trying every single number to multiply against.</p>
+<p>To this end, we are going to reverse the order of operations. Sally Aunt Dear My Excuse Please.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decrypt_attempt</span>(msg, attempt): 
+    <span style="color:#66d9ef">if</span> type(msg) <span style="color:#f92672">is</span> str: 
+        msg <span style="color:#f92672">=</span> msg<span style="color:#f92672">.</span>encode() 
+    res <span style="color:#f92672">=</span> [((b<span style="color:#f92672">-</span><span style="color:#ae81ff">2020</span>)<span style="color:#f92672">*</span>attempt)<span style="color:#f92672">%</span><span style="color:#ae81ff">256</span> <span style="color:#66d9ef">for</span> b <span style="color:#f92672">in</span> msg] 
+    <span style="color:#66d9ef">return</span>(bytes(res)) 
+</code></pre></div><p>I created the <code>decrypt_attempt()</code> function which takes two parameters: <code>msg</code>, which is the ciphertext, and <code>attempt</code>, which should be just a number. This will run it through the reverse of the <code>encrypt()</code> function that was provided, which first <em>subtracts</em> <code>2020</code> from the ordinal of the character, <em>then</em> multiplies it with the provided number before modulo-ing this with <code>256</code>.</p>
+<p>Now that we have this helper function, I will simply try every single number between 1 and 1000 (to start) and see if I can find any plaintext that contains <strong>only</strong> printable characters:</p>
+<p><img src="/img/easycrypto/bruteforce.png#center" alt="Pwn3d!"></p>
+<p>I cut out some of the other false positives that resulted in all null bytes, but we got a hit! The index to decrypt is <code>235</code>! This makes the official decryption function the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decrypt</span>(msg):
+    <span style="color:#66d9ef">if</span> type(msg) <span style="color:#f92672">is</span> str:
+        msg <span style="color:#f92672">=</span> msg<span style="color:#f92672">.</span>encode()
+    res <span style="color:#f92672">=</span> [((b<span style="color:#f92672">-</span><span style="color:#ae81ff">2020</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">235</span>)<span style="color:#f92672">%</span><span style="color:#ae81ff">256</span> <span style="color:#66d9ef">for</span> b <span style="color:#f92672">in</span> msg]
+    <span style="color:#66d9ef">return</span>(bytes(res))
+</code></pre></div><h1 id="final-thoughts">Final Thoughts</h1>
+<p>An interesting realization I had while writing this: Originally, my encryption function had the following formula:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encrypt</span>(msg):
+    <span style="color:#66d9ef">if</span> type(msg) <span style="color:#f92672">is</span> str:
+        msg <span style="color:#f92672">=</span> msg<span style="color:#f92672">.</span>encode()
+    res <span style="color:#f92672">=</span> [((b<span style="color:#f92672">**</span><span style="color:#ae81ff">3</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">2020</span>)<span style="color:#f92672">%</span><span style="color:#ae81ff">256</span> <span style="color:#66d9ef">for</span> b <span style="color:#f92672">in</span> msg]
+    <span style="color:#66d9ef">return</span>(bytes(res)<span style="color:#f92672">.</span>hex())
+</code></pre></div><p>Instead of multiplying it by 963, I&rsquo;m cubing the character. This actually wound up being not so great, and caused quite a few collisions in the modulo portion of this function, which assigned multiple bytes to the same byte. I&rsquo;m not sure how to solve something like this as each byte might be completely different and plenty of collisions may result within the modulo portion.</p>
+<p>That said, this method of encryption is <em>very, very bad</em>. Don&rsquo;t do this for production stuff. It may seem relatively confusing and secure, but brute-forcing is definitely a thing that can be used against you here. The standard rule of thumb continues on here: <strong>NEVER ROLL YOUR OWN CRYPTO</strong>. Seriously, don&rsquo;t. Unless you are a mathemetician and your crypto has been peer-reviewed and accepted everywhere, your encryption will contain weaknesses that you probably didn&rsquo;t think about. In this case, this is just a substitution cipher. And while there are ways to make a substitution cipher secure enough, if you&rsquo;re not doing any shifting in the process then it is probably not going to cut it.</p>
+<h1 id="the-moral-of-the-story">The Moral of the Story</h1>
+<p>Just stick with AES. And don&rsquo;t use ECB. Seriously, just don&rsquo;t use it.</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

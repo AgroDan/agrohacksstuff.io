@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> PyNigma, and How I Made It &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/crypto/pynigma/">PyNigma, and How I Made It</a></h1>
+                <span class="post-date">2021-04-29 </span>
+                <div class="post-content">
+                    <p>I&rsquo;ve said this before through various iterations, but some people work on cars, some build models, I write code to imitate an old cipher device from World War II. While I&rsquo;ve named this code &ldquo;PyNigma,&rdquo; it is perhaps a bit more like <a href="https://en.wikipedia.org/wiki/Typex">Typex</a> considering the amount of rotors used in this process. When I designed this, I didn&rsquo;t have any sort of intention on inventing something new, this was definitely a hobbyist project. But still, it&rsquo;s pretty fun to come up with a practical example of what could be considered a &ldquo;better&rdquo; way of implementing a substitution cipher. So much better that I even managed to use it to substitute raw bytes.</p>
+<p>Regardless, I spent a lot of time getting this together and felt that it was worth writing an article about it. This is how I built PyNigma!</p>
+<p><a href="https://github.com/AgroDan/pynigma">View PyNigma Source Code</a>.</p>
+<h1 id="how-enigma-works">How Enigma Works</h1>
+<p>The basic premise of Enigma is that it is a substitution cipher on steroids. For context on substitution ciphers, perhaps the easiest and most well-known substitution cipher is the Caesar Cipher, where each letter of the alphabet is substituted with it&rsquo;s pre-determined offset. So an offset of 3 would make A =&gt; D, B =&gt; E, C =&gt; F, etc. It offers little to no security and is generally a means of obfuscation rather than anything else.</p>
+<p>To build upon the substitution cipher idea, there exists the Vigenère cipher, which utilizes a key repeated over and over again to determine the offset. If each letter is assigned a number, then the difference between them becomes the offset to tranpose each letter to. So with a key of &ldquo;APE&rdquo;:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ATTACKATDAWN &lt;-- plaintext
+APEAPEAPEAPE &lt;-- Key of &#34;APE&#34;
+============
+AIXAROAIHALR &lt;-- ciphertext
+</code></pre></div><p>You can read up on those specific ciphers on Wikipedia, so I won&rsquo;t go further into them. The basic premise here is substitution ciphers simply transpose one letter to another without any complex bitwise calculations, just standard &ldquo;This letter = That letter&rdquo;. This is obviously different from certain things like AES, which shifts and jumbles and XORs and substitutes and all sorts of things.</p>
+<p>In a sense, this is all Enigma does. It transposes one letter to another, but does it in varying degrees of psuedo-randomness. One substitution cipher hands it over to another substitution cipher, and it continues down the path until a single key press ends in a lit bulb with an assigned letter, and this letter becomes the ciphertext. What makes it difficult to decipher is that with each key press, one or more rotors turn which changes the substitution cipher on each iteration, and the same letter typed twice would result in two completely separate letters, making it especially difficult to look for common digrams or trigrams like &ldquo;ee&rdquo; or &ldquo;oo&rdquo; or &ldquo;ing&rdquo; or what have you. Bear with me as I go through every single step of the encipherment process.</p>
+<ol>
+<li>
+<p>An operator pushes a single key on a typewriter-like interface. For the sake of the argument, let&rsquo;s say the operator pushes the letter <code>A</code>. Electronically, this creates a circuit which flows through the entire process, but realistically this circuit can be mapped to letters of the alphabet.</p>
+</li>
+<li>
+<p>The electricity flows through the first step of the process: The Plugboard. This was located physically on the front of the Enigma machine under the typewriter portion. It was a series of holes that allowed you to insert plugs which simply substituted one letter for another. It looked like this:</p>
+</li>
+</ol>
+<p><img src="/img/pynigma/Enigma-plugboard.jpg#center" alt="Plugboard, courtesy of Wikipedia Commons"></p>
+<p>If an operator configured <code>A</code> to transpose to <code>J</code>, then it would hand off <code>J</code> to the next step in the process.</p>
+<ol start="3">
+<li>
+<p>After the plugboard, the circuit continued up through the set of rotors. Each rotor was its own set of substitution ciphers, mapping each letter to another letter altogether. Rotor 1 would change the input letter of <code>J</code> to <code>E</code> as an example, and it would hand off to Rotor 2. This would transpose <code>E</code> to <code>U</code>, then hand off to rotor 3, which would transpose <code>U</code> to <code>Y</code>. The key point here is that at each key press, rotor 1 would turn once and become a completely different substitution cipher! Even worse is if rotor 1 performed a full cycle, it would automatically rotate rotor 2 by one increment, changing <em>that</em> rotor into a completely different substitution cipher. And finally, if rotor 2 performed a full cycle, it would rotate rotor 3 by one increment as well, changing that into a different substitution cipher as well. On later versions of Enigma, more rotors would be added to the mix to make it even harder to crack.</p>
+</li>
+<li>
+<p>To make matters worse, for reasons that will become clear in a bit, a reflector circuit was then hit, which would physically direct the current through a final static transposition cipher (in this example, mapping <code>Y</code> to <code>B</code>), and then back through the rotors in reverse order. Rotor 3, then 2, then 1, substituting along the way. <code>B</code> goes to <code>N</code>, <code>N</code> to <code>W</code>, and <code>W</code> to <code>R</code>.</p>
+</li>
+<li>
+<p>Finally after redirecting through rotor 1, the current would flow back to the plugboard where it receives a final transposition, <code>R</code> to <code>C</code>.</p>
+</li>
+<li>
+<p>A bulb on the lamp panel would light up corresponding to the letter <code>C</code>. This was then written down as the ciphertext and transmitted over the air.</p>
+</li>
+</ol>
+<p>If an operative received the encoded text and they knew the enigma settings that created the ciphertext, they would set the rotors to the same setting as put in for original message, and simply type the ciphertext in the same way to reveal the plaintext. This is one of the reasons why Enigma was so well received: There was no additional bulkiness for an encrypt and decrypt function, if you knew ahead of time what the rotor and plugboard settings were, you could simply type in the ciphertext and it would give you the plaintext.</p>
+<p>Of course, this meant that Enigma had to be reflective. If <code>A</code> equals <code>C</code>, then <code>C</code> had to equal <code>A</code>. Unfortunately this phenomenon proved to be a significant weakness to Enigma, because due to the reflective nature of it, you could press <code>A</code> a billion times and the ciphertext will <em>never</em> print out an <code>A</code> as well. This small hint was integral in breaking the Enigma Cipher thanks to the hard work of the Polish and Alan Turing as well.</p>
+<h1 id="why-did-i-do-it">Why did I do it?</h1>
+<p>I don&rsquo;t know, it seemed kinda fun. How can I take the basic idea of Enigma and make it better? Are substitution ciphers actually viable? And moreover, can this be applied to raw bytes as well? I can answer the last one definitively: Yes.</p>
+<h1 id="pynigma">PyNigma</h1>
+<p>I messed around with this for about a week until I got to a point where not only could I utilize the basic concept of Enigma with ciphertext, but I could also generate a key (aka the Enigma Settings) and encrypt a file with it byte-by-byte. The general usage is outlined in the Github repository I linked, but I&rsquo;d like to go over the code flow.</p>
+<h2 id="general-note-random-numbers-ahoy">General Note: Random Numbers Ahoy</h2>
+<p>At the time of this writing, pynigma was created with the usage of python&rsquo;s <code>random</code> library, and <em>not</em> the <code>secrets</code> library. This flies in the face of a previous article I wrote regarding how not-random PRNG&rsquo;s are, and this is no different. However, the <code>random</code> library had several functions that <code>secrets</code> did not have, so I used that strictly out of laziness. To fix this, I could load up the <code>secrets</code> library and generate a <em>seed</em> for the random library, which should be perfectly cryptographically random <em>enough</em>. And that would be a simple fix. But again, it&rsquo;s lazy, and frankly I don&rsquo;t even think you should use this to encrypt sensitive things anyway since it was based on a formula that was cracked about nearly a century ago. So use this with caution! &hellip;or if you&rsquo;re feeling particularly useful, feel free to contribute code to make the PRNG better. Would love to see it!</p>
+<p>Anyway, back to PyNigma&hellip;</p>
+<h2 id="first-generate-the-rotors">First, Generate the Rotors</h2>
+<p>Generating a rotor is twofold: First, you create the actual transposition table, which is typically randomly generated. This is stored as a dictionary in python, where <code>transposition_table['a'] = 'b'</code> and so on. Once the dictionary is created, then create the actual <code>Rotor</code> object and give it the created transposition table, as well as the <code>start</code> and <code>shift</code> values, which refer to the initial value the rotor should start on and the amount of times the transposition table is <em>rotated</em> per iteration, respectively.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> enigma
+<span style="color:#f92672">import</span> random
+
+<span style="color:#75715e"># First, create a shuffled version of the character set as a list</span>
+r <span style="color:#f92672">=</span> [c <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> enigma<span style="color:#f92672">.</span>charset]
+random<span style="color:#f92672">.</span>shuffle(r)
+
+<span style="color:#75715e"># Now split the list in two halves</span>
+left <span style="color:#f92672">=</span> [c <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> r[:int(len(r)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>)]]
+right <span style="color:#f92672">=</span> [c <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> r[int(len(r)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>):]]
+
+<span style="color:#75715e"># Lay them on top of each other, then build a transposition table</span>
+<span style="color:#75715e"># where each value equals the other, making it reflective!</span>
+transpose_table <span style="color:#f92672">=</span> {}
+<span style="color:#66d9ef">for</span> i,j <span style="color:#f92672">in</span> zip(left, right):
+    transpose_table[i], transpose_table[j] <span style="color:#f92672">=</span> j, i
+
+
+<span style="color:#75715e"># Assert reflective nature</span>
+test <span style="color:#f92672">=</span> transpose_table[transpose_table[<span style="color:#e6db74">&#39;a&#39;</span>]]
+<span style="color:#66d9ef">assert</span> <span style="color:#e6db74">&#39;a&#39;</span> <span style="color:#f92672">==</span> test
+</code></pre></div><p>Now with that, I can use the new <code>trasnpose_table</code> variable to simply map one character to another. The next step here is to find out a way to &ldquo;rotate&rdquo; the transpose table. Code incoming!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Build a list from the keys of the transpose_table. This preserves</span>
+<span style="color:#75715e"># the order of the current transpose table.</span>
+r <span style="color:#f92672">=</span> [transpose_table[k] <span style="color:#66d9ef">for</span> k <span style="color:#f92672">in</span> transpose_table]
+
+<span style="color:#75715e"># Shift the list over by one</span>
+r <span style="color:#f92672">=</span> r[<span style="color:#ae81ff">1</span>:] <span style="color:#f92672">+</span> r[:<span style="color:#ae81ff">1</span>]
+
+<span style="color:#75715e"># Now rebuild the transpose_table dictionary like I did before</span>
+left <span style="color:#f92672">=</span> [c <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> r[:int(len(r)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>)]]
+right <span style="color:#f92672">=</span> [c <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> r[int(len(r)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>):]]
+
+transpose_table <span style="color:#f92672">=</span> {}
+<span style="color:#66d9ef">for</span> i,j <span style="color:#f92672">in</span> zip(left, right):
+    tranpose_table[i], transpose_table[j] <span style="color:#f92672">=</span> j, i
+</code></pre></div><p>Now we have a means of &ldquo;rotating&rdquo; the rotor. Neat! I only shifted it by one, but you can change that to whatever value you&rsquo;d want, and even make it more user-friendly by using the modulo of the length of the <code>r</code> variable so you can put in a dumb shift value of something like 10,000,000 and it will still work without throwing an &ldquo;index out of bounds&rdquo; error.</p>
+<p>The concept of the &ldquo;Rotor&rdquo; makes a good use case for a Python Class, considering I will need to keep track of things like the current state of the rotor as well as the particular rotor&rsquo;s transposition table, so I can convert it to that without a problem. But adding it as a class also allows me to add yet another interesting property: The capability of defining the next rotor in sequence! If I have the ability to rotate the next rotor in the sequence, I can create a chain of rotors that know enough to rotate the next rotor after it&rsquo;s completed a full cycle. I can simply create a new variable in the <code>__init__()</code> function of the rotor object which will serve as placeholder for the next rotor in the sequence. If it performs a full cycle, it then calls the next rotor&rsquo;s <code>rotate()</code> function. If it doesn&rsquo;t, it calls the next rotor&rsquo;s <code>transpose()</code> function, and if there are no rotors next in the sequence, simply return the transposed value of the character we are substituting, and it will cascade back down the rotor chain.</p>
+<h2 id="second-generate-the-plugboard">Second, Generate the Plugboard</h2>
+<p>This was a lot simpler than creating a rotor object since there are literally no moving parts to the plugboard and it&rsquo;s simply a static substitution cipher, but it can also take in <em>a configuration of plug settings</em>. This meant that it needed an input with special characters to denote what characters should transpose to. My goal was to create a static transposition cipher &ndash; which is simple enough &ndash; but to <em>also</em> allow for a configuration input. I settled on a syntax I called plugformat, and it looked like this: <code>A-C|B-K|3-5</code>, and it would be read in such that <code>A</code> would be transposed to <code>C</code> and vice versa, <code>B</code> would transpose to <code>K</code> as <code>K</code> would also transpose to <code>B</code>, etc. So hypens would be flanked by two characters, and pipes would be the delimiter between directives.</p>
+<p>Unfortunately this had the side effect of forcing me to <em>not</em> include hypens and pipes into the character set, because otherwise this would get very confusing to work with. Now I&rsquo;m sure I could probably use a different delimiter besides a hyphen and a pipe, but I wasn&rsquo;t thinking straight and frankly it wouldn&rsquo;t really matter in the direction I would ultimately head in. More on that later.</p>
+<p>Also, I&rsquo;m sure I can use a format similar to the enigma plugboard settings like <code>AC BK 35</code> but I added literal spaces to the character set, and also for this whole thing to work the character set needed to be a length divisible by 2, that way every single character can be substituted with another unique character and back.</p>
+<p>The code for generating a plugboard substitution cipher was:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">charset <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;abcd...&#39;</span> <span style="color:#75715e"># etc etc </span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">build_plugboard</span>(plugformat):
+    transpose_table <span style="color:#f92672">=</span> {}
+    <span style="color:#66d9ef">if</span> plugformat <span style="color:#f92672">is</span> None:
+        <span style="color:#75715e"># No substitution, call it a day.</span>
+        <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> charset:
+            transpose_table[c] <span style="color:#f92672">=</span> c
+    <span style="color:#66d9ef">else</span>:
+        <span style="color:#66d9ef">try</span>:
+            <span style="color:#66d9ef">for</span> inst <span style="color:#f92672">in</span> plugformat<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;|&#39;</span>):
+                <span style="color:#66d9ef">if</span> len(inst) <span style="color:#f92672">==</span> <span style="color:#ae81ff">3</span>:
+                    i_from, i_to <span style="color:#f92672">=</span> inst<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;-&#39;</span>)
+                    <span style="color:#66d9ef">if</span> i_from <span style="color:#f92672">in</span> transpose_table <span style="color:#f92672">or</span> i_to <span style="color:#f92672">in</span> transpose_table:
+                        <span style="color:#75715e"># We have overlap!</span>
+                        <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">Exception</span>(<span style="color:#e6db74">&#34;Overlap in plugboard format!&#34;</span>)
+                    transpose_table[i_from] <span style="color:#f92672">=</span> i_to
+                    transpose_table[i_to] <span style="color:#f92672">=</span> i_from
+        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">ValueError</span>:
+            <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">Exception</span>(<span style="color:#e6db74">&#34;Please follow plugformat of a-b|c-d|d-e&#34;</span>)
+        <span style="color:#66d9ef">finally</span>:
+            <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> charset:
+                <span style="color:#66d9ef">if</span> c <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> transpose_table:
+                    transpose_table[c] <span style="color:#f92672">=</span> c
+        <span style="color:#66d9ef">return</span> transpose_table
+</code></pre></div><p>In the above case, it simply returns the transpose table, but like the Rotors, this is better used as a class object.</p>
+<h2 id="create-the-key">Create the Key</h2>
+<p>Now that I have the rotors and plugboard objects defined, all I need to do is create a larger object that builds a working machine using a pre-defined configuration. <em>This configuration should be considered the key!</em> So before I go about creating the engine, I need a function that creates a key. You can be particularly granular if you&rsquo;d like and define the amount of rotors and shift values and all that along with the plugboard, but since that can be time consuming and frankly kind of ridiculous, I need to create a function that does it all for you. I needed to create the <code>generate_key()</code> function.</p>
+<p>What I figured I would do is to create a configuration that can be read in easily, and provide everything that the enigma cipher needs to do it&rsquo;s thing. Now as to exactly what that means, I came up with the following structure:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">{
+    plugboard: &lt;plugformat applied to plugboard&gt;
+    rotors: [
+        0: {
+            start: &lt;starting pos of rotor&gt;
+            shift: &lt;shift value of rotor&gt;
+            rotor: {
+                &lt;base64-encoded and zlib compressed rotor substitution dict&gt;
+            }
+            checksum: &lt;sha256 hash of rotor&gt;
+        }
+        1: {
+            etc etc etc
+        }
+    ]
+}
+</code></pre></div><p>As I write this I realize that the checksum portion is probably not necessary, as it either works or it doesn&rsquo;t &ndash; but at least this has some form of error checking, albeit a weak one. Whatever.</p>
+<p>Now what I can describe from this particular structure is the fact that not only am I storing the plug format, the shift values and starting positions of each rotor, but the specific transposition table of each and every rotor as well! What winds up happening is that if I have a particularly complex enigma cipher, this key grows to an astromonical size. Without compression and simple base64 encoding came to 16 Kilobytes long! That&rsquo;s a tremendous size. With the addition of zlib compression as much as I could, I dropped this size to around 4 Kilobytes thankfully, so at least I had something to work with.</p>
+<p>Now, with the key format in place, I could create a function which randomly generates a key. Without going into it, you can view the source code to the <code>generate_key()</code> function in the github repo. Of course, now that I can generate a key that&rsquo;s zlib compressed, json-formatted and base64 encoded, I can also create a <code>read_key()</code> function which basically unpacks the object into a python object that can be used to generate the cipher.</p>
+<h2 id="tying-it-all-together">Tying it All Together</h2>
+<p>So I have the key generator function, the Rotor class object and the Plugboard class object, now I just need the all-encompasing Enigma class to regenerate the cipher based on the key that is passed to it. Luckily this is probably one of the simpler class objects to write, since most of the hard work is already done.</p>
+<p>Behold, the Enigma class object!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">charset <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS&#39;</span> \
+          <span style="color:#e6db74">&#39;TUVWXYZ !@#$%^&amp;*()</span><span style="color:#ae81ff">\&#39;</span><span style="color:#e6db74">&#34;,./:;&#39;</span>
+
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Enigma</span>:
+    <span style="color:#66d9ef">def</span> __init__(self, key):
+        <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">            Takes the enigma key defined in keyformat which has been deciphered
+</span><span style="color:#e6db74">            and broken down using the read_key() function, which returns a complex
+</span><span style="color:#e6db74">            python object. This object will then be used to create the enigma
+</span><span style="color:#e6db74">            machine used to encrypt (and decrypt!) plaintext.
+</span><span style="color:#e6db74">        &#34;&#34;&#34;</span>
+        self<span style="color:#f92672">.</span>key <span style="color:#f92672">=</span> read_key(key)
+        self<span style="color:#f92672">.</span>rotors <span style="color:#f92672">=</span> []
+        first <span style="color:#f92672">=</span> True
+        <span style="color:#66d9ef">for</span> r <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>key[<span style="color:#e6db74">&#34;rotors&#34;</span>]:
+            <span style="color:#66d9ef">if</span> first:
+                self<span style="color:#f92672">.</span>rotors<span style="color:#f92672">.</span>append(Rotor(tpose<span style="color:#f92672">=</span>r[<span style="color:#e6db74">&#39;rotor&#39;</span>],
+                                   start<span style="color:#f92672">=</span>r[<span style="color:#e6db74">&#39;start&#39;</span>], shift<span style="color:#f92672">=</span>r[<span style="color:#e6db74">&#39;shift&#39;</span>]))
+                first <span style="color:#f92672">=</span> False
+            <span style="color:#66d9ef">else</span>:
+                self<span style="color:#f92672">.</span>rotors<span style="color:#f92672">.</span>append(Rotor(tpose<span style="color:#f92672">=</span>r[<span style="color:#e6db74">&#39;rotor&#39;</span>], start<span style="color:#f92672">=</span>r[<span style="color:#e6db74">&#39;start&#39;</span>],
+                                          shift<span style="color:#f92672">=</span>r[<span style="color:#e6db74">&#39;shift&#39;</span>], r<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>rotors[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]))
+
+        <span style="color:#75715e"># Build the plugboard</span>
+        self<span style="color:#f92672">.</span>plugboard <span style="color:#f92672">=</span> PlugBoard(plugformat<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>key[<span style="color:#e6db74">&#39;plugboard&#39;</span>])
+        self<span style="color:#f92672">.</span>charset <span style="color:#f92672">=</span> charset
+</code></pre></div><p>Taking in a key from the <code>generate_key()</code> function, it simply unpacks everything using the <code>read_key()</code> function into a dictionary object, and applies the items within that dictionary to generate the Rotors and Plugboard. Now that the settings are there, I need a way to encipher some text:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#75715e"># Continued from above</span>
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">transpose</span>(self, data):
+        <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">            Does the actual transposition of each individual letter.
+</span><span style="color:#e6db74">        &#34;&#34;&#34;</span>
+        res <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;&#39;</span>
+        <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> data:
+            <span style="color:#66d9ef">if</span> c <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>charset:
+                r <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>plugboard<span style="color:#f92672">.</span>transpose(c)
+                r <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>rotors[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>rotate(r)
+                r <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>plugboard<span style="color:#f92672">.</span>transpose(r)
+                res <span style="color:#f92672">+=</span> r
+            <span style="color:#66d9ef">else</span>:
+                res <span style="color:#f92672">+=</span> c
+        <span style="color:#66d9ef">return</span> res
+</code></pre></div><p>Takes in a string, and iterates over each character in the string. If the character in question is a member of the supplied charset, it first transposes from the plugboard, takes the result of that and passes it through the Rotor chain and back again, then through the plugboard yet again. It returns the result.</p>
+<p>The beauty and elegance of this is that if you create another Enigma object using the same key and pass in the ciphertext provided, it should decrypt back to the original plaintext! No need for a separate decrypt function!</p>
+<h1 id="what-else-can-be-done">What Else Can Be Done?</h1>
+<p>So right now I&rsquo;m using characters from an 80-byte character set. This is somewhat limiting, especially since hyphens and pipes cannot be represented. But if I can do it with 80 characters, I should be able to do it with 256 characters, no? It&rsquo;s an even number, and if so I can properly represent every single bit configuration in a byte and transpose by that, so therefore I should be able to apply this not only to strings, but raw bytes. The trick here is getting python to work with bytes instead of strings, and the basic idea there is generally that bytes are represented as numbers&hellip;except when they&rsquo;re not. The transpose table is still working the same way, where a dictionary will map something like <code>transpose_table[b'\x9a'] = b'\x42'</code> and what have you, but I just had to take care to ensure that strings were converted to bytes if possible and the resulting encoding necessary from doing that. Ultimately I came up with <code>subcrypt.py</code>, short for &ldquo;substitution crypto&rdquo; which accepts binary data as input and tranposes accordingly.</p>
+<p>Used in conjunction with <code>en.py</code>, the command line encoding tool which I made begrudgingly with the help of the <code>argparse</code> library, you can now encode binary data!</p>
+<p>With the help of century-old engineering, I applied a complex substitution cipher to what could potentially be decent encryption. I&rsquo;m pretty proud of it.</p>
+<h1 id="final-thoughts">Final Thoughts</h1>
+<p>Now this begs the question of &ldquo;Is this decent encryption?&rdquo; Meh, probably not. I figured a list of pros and cons might be beneficial for this cipher:</p>
+<h2 id="pros">Pros</h2>
+<ul>
+<li>Symmetric Encryption. One key to rule them all.</li>
+<li>The key contains the transposition table of each rotor. This means that without this table there is no way (that I know of) to determine the relation of one character to its transposed value.</li>
+<li>No bitwise calculation performed, all substitution ciphers. Not very complex on the lowest level so it&rsquo;s easy to understand its concept, but extremely difficult to reverse engineer a ciphertext.</li>
+<li>No need for a separate decrypt function as this is a reflective cipher.</li>
+</ul>
+<h2 id="cons">Cons</h2>
+<ul>
+<li>Symmetric Encryption. You would need to share the key with the intended party somehow in a separate secure channel. Most likely through the use of a Diffie-Hellman key exchange and RSA&hellip;but at that point, just use RSA.</li>
+<li>S L O W. This cipher takes a looooong time to run. Using the default of 5-10 rotors and a plugboard of a max of 20 possible settings, this took me about 74 seconds to encrypt a 1 Mb file of only zeroes. This can potentially be sped up with a more low-level language like C or even Go, but since I did this as a means of a proof of concept I chose python. Perhaps I can get some speed from this if I incorporate Cython? Could be worth revisiting.</li>
+<li>Like the original Enigma, this cipher is plagued with the same issue of never encoding one character to the same character as the plaintext. Meaning if you use a plaintext of the letter <code>A</code> a billion times, the resulting ciphertext will <em>never</em> output a letter <code>A</code>. This was one of the biggest vulnerabilities the original Enigma had that the Allies exploited. Perhaps this may tell you too much about the plaintext, but hopefully with a character set of 256 instead of the original 26 this vulnerability won&rsquo;t be as potent.</li>
+</ul>
+<h2 id="additional-things-of-note">Additional Things of Note</h2>
+<ul>
+<li>I can probably optimize this a bit. Is there a need for a plugboard? Can&rsquo;t I just use the Rotors?</li>
+<li>How many rotors are necessary for Good Enough Security <sup>TM</sup>?</li>
+<li>Just use AES.</li>
+</ul>
+<h1 id="parting-words-and-a-potential-use-case">Parting Words, and a Potential Use-Case?</h1>
+<p>It&rsquo;s difficult to explain my way of thinking when creating an encryption algorithm. Especially one that <em>only</em> substitutes bytes. AES does that and a lot more, and it does it really well. That said, I could potentially implement a stream cipher with this mechanism as well. Simply design a keystream using a bytestring repeated over and over again as the plaintext, then XOR the keystream with the plaintext to produce new ciphertext. In a sense, it would be like a jacked-up version of the Vigenère Cipher. Say the keystream was just the word <code>APE</code> repeated over and over again, plugged into a pynigma cipher. So:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">
+APEAPEAPEAPEAPE &lt;-- repeated key
+===============
+BJIPOSFO1FUJLAZ &lt;-- resulting ciphertext from PyNigma
+
+XOR the above with your plaintext of &#34;ATTACK AT DAWN&#34; to obtain a ciphertext!
+</code></pre></div><p>Could be onto something there!</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

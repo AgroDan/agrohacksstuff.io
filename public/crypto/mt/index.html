@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> Pseudo Random Number Generators (and why you should tread lightly) &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/crypto/mt/">Pseudo Random Number Generators (and why you should tread lightly)</a></h1>
+                <span class="post-date">2021-03-21 </span>
+                <div class="post-content">
+                    <p>I&rsquo;ve always had some sort of weird nerdy interest in pseudo-random number generators. How is it that a computer, an object based solely on a deterministic approach to everything, can generate a number that is supposedly <em>random</em>? Well TL;DR, it simply can&rsquo;t. Well, not without relying on external factors that are <em>unreasonable</em> to predict. One such example is Linux using things like timing of keystrokes and mouse movements, and other such readings from hard-to-predict motions of the internal mechanisms of the hard drive to generate enough entropy to generate a seed. Well, I hope to clarify this a bit.</p>
+<h1 id="introductions">Introductions</h1>
+<p>First, I&rsquo;d like to say that I do not have a degree in mathematics, or even cryptography. I have a general interest in it of course as it&rsquo;s essentially the nature of my professional career. So take what I say how you will. I&rsquo;m an enthusiast, and frankly I just learned this so this is more of a scribbling of my own notes. Still though, a shout out to the <a href="https://cryptopals.com">Cryptopals</a> challenge for really driving my interest in this home.</p>
+<p>So&hellip;what is a random number generator? Well it&rsquo;s kind of easy to think of a random number. Just pick any number from one to 100,000,000. Predicting this is impossible without outside interference, and choosing one is simple. Not really the case with a computer. Computers are deterministic by nature: You give it parameters, it generates output based on those inputs. That output will be the same every single time as long as the inputs are the same and there are no outside influences acting to manipulate the data during processing. This is by design. So how can a system generate a random number, and why is this necessary?</p>
+<h3 id="uses">Uses</h3>
+<p>Random numbers are used in video games, used to control computer-controlled characters to simulate artificial intelligence, simply that you&rsquo;re not supposed to predict a pattern. They&rsquo;re used in cryptography a LOT. In fact, a random key was generated to encrypt the transmission of the page you&rsquo;re reading right now. It&rsquo;s random so that it can&rsquo;t be guessed. If it were sequential&hellip;well then if I found out that the key was created with a hash of the number 1000, I know that the next key generated will be a hash of 1001, then 1002, and so on. I can decrypt all traffic the server uses now! So obviously, a random key should be generated such that I can&rsquo;t simply guess it. Hence, RNG&rsquo;s.</p>
+<p>So how does a computer generate a random number? Well there are a ton of functions that do it, but to simplify it I wrote a truly terrible pseudo-random number generator in Go. You are free to use it for whatever means you&rsquo;d like, but&hellip;don&rsquo;t. Ever.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-golang" data-lang="golang"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">gen_random</span>(<span style="color:#a6e22e">seed</span> <span style="color:#66d9ef">int</span>) <span style="color:#66d9ef">int</span> {
+    <span style="color:#a6e22e">rng</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">seed</span><span style="color:#f92672">*</span><span style="color:#ae81ff">3</span>  <span style="color:#75715e">// mult by 3
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">rng</span> <span style="color:#f92672">*=</span> <span style="color:#ae81ff">42</span>      <span style="color:#75715e">// mult by 42
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">rng</span> <span style="color:#f92672">&gt;&gt;=</span> <span style="color:#ae81ff">1</span>      <span style="color:#75715e">// bitshift-right by 1
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">rng</span> <span style="color:#f92672">%=</span> <span style="color:#ae81ff">10</span>      <span style="color:#75715e">// modulo by 10
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">rng</span>     <span style="color:#75715e">// send it!
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>This is a PRNG that takes a number given to it (known as a seed), does some really dumb calculations on it, and returns a number between 0 and 9, &ldquo;randomly.&rdquo; Well, more accurately it returns a number between 0 and 9 &ldquo;reasonably unpredictably.&rdquo; You can probably do some of the calculations on pen and paper if you really cared, but the takeaway from this is that it&rsquo;s meant to obscure the output, given an input. Feed it a number, and it will return a different number. Feed it the same number twice, and it will return the same output twice. The seed is absolutely necessary to call a PRNG.</p>
+<p>General usage dictates that if you&rsquo;re calling this random function over and over again, you&rsquo;d simply use the number it generates as the seed for the next iteration of the function call. This is common practice. Only&hellip;it will always return a number between 0 and 9, and eventually it will just loop and repeat. In fact, eventually it generates a complete pattern.</p>
+<p>Take, for example, this loop:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-golang" data-lang="golang"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+<span style="color:#f92672">import</span> (
+    <span style="color:#e6db74">&#34;fmt&#34;</span>,
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">rnd</span> <span style="color:#66d9ef">int</span> = <span style="color:#ae81ff">1</span>
+    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span><span style="color:#f92672">:=</span><span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span>&lt;<span style="color:#ae81ff">50</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
+        <span style="color:#a6e22e">rnd</span> = <span style="color:#a6e22e">gen_random</span>(<span style="color:#a6e22e">rnd</span>)
+        <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;Iteration&#34;</span>, <span style="color:#a6e22e">i</span>, <span style="color:#e6db74">&#34;result:&#34;</span>, <span style="color:#a6e22e">rnd</span>)
+    }
+}
+</code></pre></div><p>And the result:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Iteration 0 result: 3
+Iteration 1 result: 9
+Iteration 2 result: 7
+Iteration 3 result: 1
+Iteration 4 result: 3
+Iteration 5 result: 9
+Iteration 6 result: 7
+Iteration 7 result: 1
+Iteration 8 result: 3
+Iteration 9 result: 9
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; snip &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+</code></pre></div><p>Notice how the result starts to repeat. 3, then 9, then 7, then 1, back to 3 and repeating forever. Suddenly not so random anymore. Patterns always emerge. And now we know if we ever generate a 7 for example, the next number will predictably be 1.</p>
+<p>So&hellip;how do you automatically generate a seed that generates a random number? Typically what&rsquo;s done is to use the current epoch time or something. That way every time the random number generator is initiated, the number cannot possibly be guessed. Or can it?</p>
+<p>Let&rsquo;s put a pin in that. First, I want to talk about MT19937, or the Mersenne Twister.</p>
+<h1 id="the-mersenne-twister">The Mersenne Twister</h1>
+<p>I won&rsquo;t go into the whole idea about what the Mersenne Twister is and how it came to be. You can look that up on <a href="https://en.wikipedia.org/wiki/Mersenne_Twister">Wikipedia</a>. Just understand that it was created by two Japanese math geniuses back in 1997 as a means of fixing the flaws of older PRNGs, and that it&rsquo;s actually <em>really good</em>. So good that many, many, MANY software systems have adopted it as the de facto PRNG formula. What makes it so good? Well, it wasn&rsquo;t patented, and it&rsquo;s premissively-licensed, so anyone can use it for free! Plus it has a period of <code>(2**19937)-1</code>, which is just a gigantic number. It&rsquo;s so big it absolutely dwarfs the scientific estimate of atoms in the <em>known universe.</em> Seriously, go into a python prompt and type <code>10**82</code> and then <code>(2**19937)-1</code> and see how much bigger the period is. It&rsquo;s tremendous.</p>
+<p>Anyway, here is my implementation of the MT19937 function, written in python! This was based on the pseudocode posted on wikipedia:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MT19937</span>():
+    <span style="color:#75715e"># If this is unseeded, I will seed with the C constant</span>
+    <span style="color:#75715e"># of 5489 since you&#39;re too lazy to do it yourself you bum</span>
+    <span style="color:#66d9ef">def</span> __init__(self, seed<span style="color:#f92672">=</span><span style="color:#ae81ff">5489</span>):
+        <span style="color:#75715e"># HERE BE CONSTANTS</span>
+        self<span style="color:#f92672">.</span>w <span style="color:#f92672">=</span> <span style="color:#ae81ff">32</span> <span style="color:#75715e"># word size, in num of bits. Max length of each number in the array</span>
+        self<span style="color:#f92672">.</span>n <span style="color:#f92672">=</span> <span style="color:#ae81ff">624</span> <span style="color:#75715e"># degree of recurrence</span>
+        self<span style="color:#f92672">.</span>m <span style="color:#f92672">=</span> <span style="color:#ae81ff">397</span> <span style="color:#75715e"># middle word, offset of recurrence relation defining the series</span>
+        self<span style="color:#f92672">.</span>r <span style="color:#f92672">=</span> <span style="color:#ae81ff">31</span> <span style="color:#75715e"># separation point of one word, or num of bits of lower bitmask</span>
+        self<span style="color:#f92672">.</span>a <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x9908b0df</span> <span style="color:#75715e"># coefficients of rational normal form twist matrix</span>
+        self<span style="color:#f92672">.</span>u <span style="color:#f92672">=</span> <span style="color:#ae81ff">11</span> <span style="color:#75715e"># additionall MT tempering bit shifts/masks</span>
+        self<span style="color:#f92672">.</span>d <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff</span> <span style="color:#75715e"># additionall MT tempering bit shifts/masks</span>
+        self<span style="color:#f92672">.</span>s <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span> <span style="color:#75715e"># TGFSR(R) tempering bit shift</span>
+        self<span style="color:#f92672">.</span>b <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x9d2c5680</span> <span style="color:#75715e"># TGRSR(R) tempering bit masks</span>
+        self<span style="color:#f92672">.</span>t <span style="color:#f92672">=</span> <span style="color:#ae81ff">15</span> <span style="color:#75715e"># TGFSR(R) tempering bit shift</span>
+        self<span style="color:#f92672">.</span>c <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xefc60000</span> <span style="color:#75715e"># TGRSR(R) tempering bit masks</span>
+        self<span style="color:#f92672">.</span>l <span style="color:#f92672">=</span> <span style="color:#ae81ff">18</span> <span style="color:#75715e"># additionall MT tempering bit shifts/masks</span>
+        self<span style="color:#f92672">.</span>f <span style="color:#f92672">=</span> <span style="color:#ae81ff">1812433253</span> 
+        <span style="color:#75715e"># Declare the array of zeroes to start</span>
+        self<span style="color:#f92672">.</span>MT <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span> <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(self<span style="color:#f92672">.</span>n)]
+        self<span style="color:#f92672">.</span>lower_mask <span style="color:#f92672">=</span> (<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span>self<span style="color:#f92672">.</span>r)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>
+        self<span style="color:#f92672">.</span>upper_mask <span style="color:#f92672">=</span> (<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span>self<span style="color:#f92672">.</span>r)
+        self<span style="color:#f92672">.</span>index <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>n<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>
+        self<span style="color:#f92672">.</span>_seed_mt(seed)
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_seed_mt</span>(self, seed):
+        self<span style="color:#f92672">.</span>index <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>n
+        self<span style="color:#f92672">.</span>MT[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> seed
+        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>n):
+            t <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>f <span style="color:#f92672">*</span> (self<span style="color:#f92672">.</span>MT[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">^</span> (self<span style="color:#f92672">.</span>MT[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">&gt;&gt;</span> (self<span style="color:#f92672">.</span>w<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>))) <span style="color:#f92672">+</span> i
+            self<span style="color:#f92672">.</span>MT[i] <span style="color:#f92672">=</span> t <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xffffffff</span>
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_twist</span>(self):
+        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, self<span style="color:#f92672">.</span>n):
+            x <span style="color:#f92672">=</span> (self<span style="color:#f92672">.</span>MT[i] <span style="color:#f92672">&amp;</span> self<span style="color:#f92672">.</span>upper_mask) <span style="color:#f92672">+</span> (self<span style="color:#f92672">.</span>MT[(i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">%</span>self<span style="color:#f92672">.</span>n] <span style="color:#f92672">&amp;</span> self<span style="color:#f92672">.</span>lower_mask)
+            xA <span style="color:#f92672">=</span> x <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">1</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> (x<span style="color:#f92672">%</span><span style="color:#ae81ff">2</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+                xA <span style="color:#f92672">=</span> xA <span style="color:#f92672">^</span> self<span style="color:#f92672">.</span>a
+            self<span style="color:#f92672">.</span>MT[i] <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>MT[(i<span style="color:#f92672">+</span>self<span style="color:#f92672">.</span>m) <span style="color:#f92672">%</span> self<span style="color:#f92672">.</span>n] <span style="color:#f92672">^</span> xA
+
+        self<span style="color:#f92672">.</span>index <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+
+    <span style="color:#75715e"># extract a tempered value based on MT[index]</span>
+    <span style="color:#75715e"># calling twist() every n numbers</span>
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">extract_number</span>(self):
+        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>index <span style="color:#f92672">&gt;=</span> self<span style="color:#f92672">.</span>n:
+            <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>index <span style="color:#f92672">&gt;</span> self<span style="color:#f92672">.</span>n:
+                <span style="color:#75715e"># This was never seeded. So seed with</span>
+                <span style="color:#75715e"># the C constant for unseeded gen</span>
+                self<span style="color:#f92672">.</span>_seed_mt(<span style="color:#ae81ff">5489</span>)
+                <span style="color:#75715e"># Truthfully though, I don&#39;t think we</span>
+                <span style="color:#75715e"># will ever hit here without some serious</span>
+                <span style="color:#75715e"># code-mucking but I&#39;ll keep it in here</span>
+                <span style="color:#75715e"># just for those people that do this</span>
+            self<span style="color:#f92672">.</span>_twist()
+
+        y <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>MT[self<span style="color:#f92672">.</span>index]
+        y <span style="color:#f92672">^=</span> ((y <span style="color:#f92672">&gt;&gt;</span> self<span style="color:#f92672">.</span>u) <span style="color:#f92672">&amp;</span> self<span style="color:#f92672">.</span>d)
+        y <span style="color:#f92672">^=</span> ((y <span style="color:#f92672">&lt;&lt;</span> self<span style="color:#f92672">.</span>s) <span style="color:#f92672">&amp;</span> self<span style="color:#f92672">.</span>b)
+        y <span style="color:#f92672">^=</span> ((y <span style="color:#f92672">&lt;&lt;</span> self<span style="color:#f92672">.</span>t) <span style="color:#f92672">&amp;</span> self<span style="color:#f92672">.</span>c)
+        y <span style="color:#f92672">^=</span> (y <span style="color:#f92672">&gt;&gt;</span> self<span style="color:#f92672">.</span>l)
+        self<span style="color:#f92672">.</span>index <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+        <span style="color:#66d9ef">return</span> y <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xffffffff</span>
+</code></pre></div><p>Admittedly, the above is&hellip;a little confusing to just pick up and get. Trust me I scratched my head for quite some time before I finally got it. There is a lot of math, obviously, and more specifically a lot of bitwise operations. There&rsquo;s XORs, and ANDs, and bitshifting left and right, modulos for days and some questionable usage of oddly-chosen constants. But the takeaway here is that the usage is relatively simple:</p>
+<ul>
+<li>Initialize the object with <code>rando = MT19937(&lt;some number&gt;)</code></li>
+<li>Get a random number with <code>rando.extract_number()</code></li>
+</ul>
+<p>There. Easy peasy. It will spit out a 32-bit (or 10 digit) random number. Or technically a pseudo-random number I guess. Ok cool, this seems pretty secure. So does this solve all of my problems?</p>
+<p>Of course not!</p>
+<h2 id="defeating-prngs">Defeating PRNGs</h2>
+<p>Remember, that for all it&rsquo;s confusing math, a PRNG is solely reliant on the seed generated from it. To demonstrate, this is an example of two variables I created, two separate objects given the same seed:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">In [14]: r = MT19937(123123123)
+In [15]: a = MT19937(123123123)
+
+In [16]: r.extract_number()
+Out[16]: 3278597328
+
+In [17]: a.extract_number()
+Out[17]: 3278597328
+</code></pre></div><p>&hellip;and they spit out the same number. In fact if I keep asking them to extract numbers, they will return the same pattern 1 for 1 with 100% accuracy.</p>
+<p>So how can this be defeated? Say you&rsquo;re a developer, and you seed your PRNG with the current timestamp, surely nobody can predict the next number generated with something so obscure than that, can they? Well it can be predicted. And don&rsquo;t call me Shirley.</p>
+<p>Take the following code:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> random
+<span style="color:#f92672">import</span> datetime
+<span style="color:#f92672">from</span> time <span style="color:#f92672">import</span> sleep
+<span style="color:#f92672">from</span> math <span style="color:#f92672">import</span> floor
+
+waittime <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>randrange(<span style="color:#ae81ff">40</span>, <span style="color:#ae81ff">1000</span>)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Sleeping...zzzzzzz&#34;</span>)
+sleep(waittime)
+
+<span style="color:#75715e"># Seeding...</span>
+ts <span style="color:#f92672">=</span> datetime<span style="color:#f92672">.</span>datetime<span style="color:#f92672">.</span>now()<span style="color:#f92672">.</span>timestamp()
+ts <span style="color:#f92672">=</span> floor(ts)
+r <span style="color:#f92672">=</span> MT19937(ts)
+rand_num <span style="color:#f92672">=</span> r<span style="color:#f92672">.</span>extract_number()
+waittime <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>randrange(<span style="color:#ae81ff">40</span>,<span style="color:#ae81ff">100</span>)
+sleep(waittime)
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;Randomly generated number: {rand_num}&#34;</span>)
+
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Now attempting to discover the seed...&#34;</span>)
+curr_timestamp <span style="color:#f92672">=</span> floor(datetime<span style="color:#f92672">.</span>datetime<span style="color:#f92672">.</span>now()<span style="color:#f92672">.</span>timestamp())
+
+outtatime <span style="color:#f92672">=</span> curr_timestamp <span style="color:#f92672">-</span> <span style="color:#ae81ff">5000</span>
+
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(outtatime, curr_timestamp):
+    attempt <span style="color:#f92672">=</span> MT19937(i)
+    <span style="color:#66d9ef">if</span> attempt<span style="color:#f92672">.</span>extract_number() <span style="color:#f92672">==</span> rand_num:
+        <span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;We have a match! The discovered seed is {i}!&#34;</span>)
+        <span style="color:#66d9ef">break</span>
+</code></pre></div><p>This was my solution to challenge 22 on Cryptopals (spoiler alert, sorry). The challenge was to generate a random number using MT19937, seeded with a random timestamp between now and about 15 minutes or so, then attempt to discover the seed based on my knowledge (or in a realistic scenario, a guess) of how the seed is generated. It simply generates a range of timestamps from 5000 seconds ago to now, then brute forces every single one by using it as the seed for the PRNG, then comparing each extracted number with the one I was given. Once it starts brute forcing, it takes about 10 seconds or so to finish. If I can brute force it this fast, then&hellip;maybe you shouldn&rsquo;t be using just a PRNG result seeded with the current timestamp as the key to whatever encryption method you are using.</p>
+<p>But then, this isn&rsquo;t specific to the Mersenne Twister. Really any PRNG will do this. One thing that the MT does is the <code>extract_number()</code> function doesn&rsquo;t take any arguments, which is odd because my absolutely terrible <code>gen_random()</code> function takes an integer as the seed for every call of the function. So you have to seed it every time. How does MT19937 do it if it only accepts one number? Does it just re-seed itself with the number it last generated?</p>
+<p><strong>NO</strong></p>
+<p>Definitely not. Because if it did, you could simply use the number it last generated to predict the next number out of the function. This does not a good PRNG make. Again, <code>gen_random()</code> is a terrible PRNG, because if I feed the number 3 to it, I will always get 9. Then 7, then 1, then 3 again. MT19937 has a built-in safeguard against it, but to understand it I need to explain it more.</p>
+<h2 id="mersenne-twister-deep-dive">Mersenne Twister Deep Dive</h2>
+<p>What happens when you execute the Mersenne Twister? Well, first when you initialize it, you must initialize it with a seed. Then what happens?</p>
+<ol>
+<li>It builds an array of size 624, for the sake of simplicity I will call it MT.</li>
+<li>It sets MT[0] to the seed you provided.</li>
+<li>For every index after MT[0], it:</li>
+</ol>
+<ul>
+<li>Right-shifts <code>MT[i-1]</code> with the constant <code>30</code></li>
+<li>XORs the result with <code>MT[i-1]</code></li>
+<li>Multiplies the result with the constant <code>1812433253</code></li>
+<li>Adds the result with <code>i</code></li>
+<li>ANDs the result with <code>0xffffffff</code>, ensuring the result is only 32 bits long</li>
+</ul>
+<p>Now it has its state array! This is basically how the Mersenne Twister operates. Whenever you extract a number, you are literally just pulling from this state array.</p>
+<p>But that&rsquo;s not where it stops. You&rsquo;d think it is jumbled up enough, but it gets even crazier.</p>
+<p>The first time you extract a number, it performs the <code>_twist()</code> function on its state array. This function does pretty much what you&rsquo;d think it does: it jumbles up the state array even worse than before. I won&rsquo;t get into the specifics of what it does, because it&rsquo;s kind of not worth knowing in this context. Just understand that the <code>_twist()</code> function simply runs through the current state array, jumbles up every single number with some pretty heavy bitwise math operations, and leaves you in a state of complete pseudo-randomness. Basically, a &ldquo;you can&rsquo;t get there from here&rdquo; scenario.</p>
+<p>Now that the state array is all messed up beyond recongition, we still need to extract a number! The <code>_twist()</code> function happily sets the internal index to point back to <code>MT[0]</code> and lets you extract that number. Man, that&rsquo;s pretty random. But it looks like our job here is done. Since we just called the <code>extract_number()</code> function, all it needs to do is simply spit out the number that the internal index is pointing to (in this case, <code>MT[0]</code>), then just increment the index by 1. We can run this function indefinitely, because the <code>extract_number()</code> function has a built-in safeguard that when the index hits over 624, it re-runs the <code>_twist()</code> function, jumbles up the state array all over again, then sets the index back to zero. Since the MT19937 function has a period of&hellip;a really <em>really</em> long cycle, we don&rsquo;t expect this to repeat its cycle anytime before the cold, cold heat death of the known universe, so we have an indefinite random number generator! Woo!</p>
+<p>Except that would be bad. And in case you&rsquo;re a bit fuzzy on the whole good/bad thing, you should try to imagine all life as you know it stopping instantaneously and every molecule in your body exploding at the speed of light.</p>
+<p>Well maybe not that bad. But if we just sit back and collect every single number that the <code>extract_number()</code> function spits out, we can simply build our own state array ourselves&hellip;then run our own <code>_twist()</code> function on it when you do. I can then predict with 100% accuracy the result of every single random number you generate from this point forward.</p>
+<p>So yeah. That&rsquo;s bad.</p>
+<p>Luckily, MT19937 has an ace in its sleeve: Tempering functions!</p>
+<p>The <code>extract_number()</code> function doesn&rsquo;t just spit out the number it has in its state array at the index. It extracts it internally, runs it through a few calculations, then spits out the result, effectively masking the contents of the state array from the receiver.</p>
+<p>These are the actions taken whenever <code>extract_number()</code> is called:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">y <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>MT[self<span style="color:#f92672">.</span>index]
+y <span style="color:#f92672">^=</span> ((y <span style="color:#f92672">&gt;&gt;</span> self<span style="color:#f92672">.</span>u) <span style="color:#f92672">&amp;</span> self<span style="color:#f92672">.</span>d)
+y <span style="color:#f92672">^=</span> ((y <span style="color:#f92672">&lt;&lt;</span> self<span style="color:#f92672">.</span>s) <span style="color:#f92672">&amp;</span> self<span style="color:#f92672">.</span>b)
+y <span style="color:#f92672">^=</span> ((y <span style="color:#f92672">&lt;&lt;</span> self<span style="color:#f92672">.</span>t) <span style="color:#f92672">&amp;</span> self<span style="color:#f92672">.</span>c)
+y <span style="color:#f92672">^=</span> (y <span style="color:#f92672">&gt;&gt;</span> self<span style="color:#f92672">.</span>l)
+self<span style="color:#f92672">.</span>index <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+<span style="color:#66d9ef">return</span> y <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xffffffff</span>
+</code></pre></div><p>To clarify:</p>
+<ol>
+<li>set the variable <code>y</code> to <code>MT[index]</code></li>
+<li><code>y</code> is then shifted right 11 bits, AND&rsquo;d with <code>0xffffffff</code>, then XOR&rsquo;d with <code>y</code></li>
+<li><code>y</code> is then shifted left 7 bits, AND&rsquo;d with <code>0x9d2c5680</code>, then XOR&rsquo;d with <code>y</code></li>
+<li><code>y</code> is then shifted left 15 bits, AND&rsquo;d with <code>0xefc60000</code>, then XOR&rsquo;d with <code>y</code></li>
+<li><code>y</code> is then shifted right 18 bits, and XOR&rsquo;d with <code>y</code></li>
+<li>index is increased by 1</li>
+<li>The tempered value of <code>y</code> is then AND&rsquo;d by <code>0xffffffff</code>, which simply shortens it to 32 bits long (or 10 digits, thereabouts)</li>
+</ol>
+<p>Yikes. Well, there&rsquo;s a lot of steps. And guess what! They are actually reversible! It&rsquo;s not easy, but they are reversible! And in theory, if you reverse these in the reverse order it goes through, then you could technically be able to determine the number it pulled from the state array and <em>reconstruct the same state array</em>. And if you do that, you can predict every single number it generates.</p>
+<h2 id="untempering-the-extracted-number">Untempering the Extracted Number</h2>
+<p>There are basically two types of formulas: left shift AND, and just right shift, and both of these are XOR&rsquo;d with the result of the previous formula. The formula <code>y ^= ((y &gt;&gt; self.u) &amp; self.d)</code> does actually have an AND operation, but it&rsquo;s just ANDing it with <code>0xffffffff</code>, which mathematically doesn&rsquo;t do anything significant to the equation. In fact, I&rsquo;m not even sure why it&rsquo;s even there. That said, we can feasibly ignore the <code>&amp; self.d</code> portion. So since I&rsquo;m looking to work up, I&rsquo;d first like to start with <code>y ^= (y &gt;&gt; 18)</code>.</p>
+<p>Bit shifting is basically this:</p>
+<h3 id="right-shift">Right Shift</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">1111 &gt;&gt; 1 = 111
+===============
+
+Simply shifting all digits one to the right, and ditching the right-most digit. 
+Mathematically, this is the same as dividing it by two and rounding down.
+
+5   &gt;&gt; 1 =  2
+101 &gt;&gt; 1 = 10
+6   &gt;&gt; 1 =  3
+110 &gt;&gt; 1 = 11
+</code></pre></div><h3 id="left-shift">Left Shift</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">1111 &lt;&lt; 1 = 11110
+=================
+
+You guessed it, it shifts all the digits one to the left, padding the additional
+zero on the right. Mathematically it&#39;s the same as multiplying by 2.
+
+5   &lt;&lt; 1 = 10
+101 &lt;&lt; 1 = 1010
+6   &lt;&lt; 1 = 12
+110 &lt;&lt; 1 = 1100
+</code></pre></div><p>And since I&rsquo;m at it, sorry for the math people that know this already but I feel like a quick refresher on bitwise math might be worthwhile to some.</p>
+<h3 id="xor">XOR</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0 ^ 0 = 0
+0 ^ 1 = 1
+1 ^ 0 = 1
+1 ^ 1 = 0
+
+XOR, also called NEQ or Not Equal, also called eXclusive OR, simply returns a 1
+when both operands are different. This has the unique quality of operating on
+relationships of threes, whereby if you take the result and XOR it with any of
+the other operands, you will return the third operand. So:
+
+A ^ B = C
+
+as well as
+
+A ^ C = B
+C ^ B = A
+B ^ A = C
+
+and so on. XOR is the fundamental building block of all encryption! If you only
+have C, then you just have C. But if you ALSO have B, then you can find out A.
+</code></pre></div><h3 id="and">AND</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0 &amp; 0 = 0
+1 &amp; 0 = 0
+0 &amp; 1 = 0
+1 &amp; 1 = 1
+
+AND only returns 1 if both operands are 1. This is useful for comparing data,
+and also has the unique ability to create a mask. If you only want the first
+4 digits of a number, you can simply mask it:
+
+  1111100100101100101
+&amp; 0000000000000001111
+=====================
+  0000000000000000101
+
+By ANDing a value with 0xff (or 1111), you will only return the last 4 bits of
+the number. This is called a mask! Network Engineers will see this pretty
+clearly. Neato!
+
+Additionally, a quick trick to create a mask of, say, 10 bits long:
+
+(1&lt;&lt;10)-1
+
+Shifts 1 over 10 times, making it 10000000000 then subtracts it by 1 to
+create: 1111111111
+</code></pre></div><h3 id="or">OR</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0 | 0 = 0
+0 | 1 = 1
+1 | 0 = 1
+1 | 1 = 1
+
+OR returns a 1 if just one operand is a 1. For our purposes, this is useful in
+case I want to append a bit to the end of a number. Say I wanted to append a 1
+to a number, I would simply left-shift it by 1, then OR it with a 1. So
+technically, (x&lt;&lt;1) | 1
+
+   111001
+&lt;&lt;      1
+=========
+  1110010
+|       1
+=========
+  1110011
+
+Just a neat trick.
+</code></pre></div><p>Now, back to the good stuff. Reversing the right shift.</p>
+<p>The basic premise is thus: If we right shift a number by a bunch of digits and <em>then</em> XOR it with the number, then we can technically recover the bits that have been moved out of the way with the right shift right off the bat because those zeroes are XORd with the original number. So on a smaller scale, let&rsquo;s look at what happens with the aforementioned formula: <code>y ^= (y &gt;&gt; 18)</code>, only instead of using a 32 bit integer, I&rsquo;ll use something a lot smaller to work with, only 8 bits long. Let&rsquo;s say for instance, the formula is <code>y ^= (y &gt;&gt; 4)</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">   1100 0101     Technically, we wouldn&#39;t know this number
+&gt;&gt;         4
+============
+   0000 1100
+^  1100 0101     Notice here, XORing orignal with zeros = original
+============
+   1100 1001     First 4 bits are original bits
+</code></pre></div><p>So we&rsquo;re halfway there. We can immediately see that the first 4 bits are the original bits. Now all we need to figure out is how to recover the remaining 4 bits. Those 4 bits have been XOR&rsquo;d with the bits 4 bits to the left of it. If we
+XOR each bit with the corresponding bit 4 bits to the left, we get:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">  1001
+^ 1100
+======
+  0101
+
+Append this to the recovered bits and...
+
+  1100 0101
+
+We recovered the original number!
+</code></pre></div><p>I&rsquo;ve coded the above mechanism in python to accommodate for the different bitshift values, also assuming that the integer we&rsquo;re dealing with will always be a 32-bit integer (which is specified in MT19937).</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">undo_right_shift</span>(number, shift_len, max_len<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        This function will un-do the right shift function performed in the
+</span><span style="color:#e6db74">        extract_number() function in the Mersenne Twister. This is integral
+</span><span style="color:#e6db74">        in building the state array to re-create the algorithm.
+</span><span style="color:#e6db74">        number := the original number
+</span><span style="color:#e6db74">        shift_len := the shift length stated in this function
+</span><span style="color:#e6db74">        max_len := the size length of the random number stored. 32 bits is default.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    result <span style="color:#f92672">=</span> number
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, max_len, shift_len):
+        mask <span style="color:#f92672">=</span> ((<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span>shift_len)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)     <span style="color:#75715e"># Create a mask of size shift_len</span>
+        mask <span style="color:#f92672">&lt;&lt;=</span> (max_len<span style="color:#f92672">-</span>shift_len)  <span style="color:#75715e"># shift mask over specified amount of times</span>
+        mask <span style="color:#f92672">&gt;&gt;=</span> i                    <span style="color:#75715e"># mask moved over more for specificity</span>
+        pulled <span style="color:#f92672">=</span> result <span style="color:#f92672">&amp;</span> mask        <span style="color:#75715e"># Pull the number from the result w/ the mask</span>
+        pulled <span style="color:#f92672">&gt;&gt;=</span> shift_len          <span style="color:#75715e"># shift pulled over shift_len</span>
+        result <span style="color:#f92672">^=</span> pulled              <span style="color:#75715e"># XOR result with pulled</span>
+    <span style="color:#66d9ef">return</span> result
+</code></pre></div><p>So that takes care of the two right shift formulas in the equation. Now about those pesky left-shift-and formulas&hellip;which are actually not even that bad. I will work with this formula: <code>y ^= ((y &lt;&lt; 15) &amp; 0xefc60000)</code></p>
+<p>A lot of stuff to unpack, so I&rsquo;ll simplify it for explanations' sake. My formula will be: <code>y ^= ((y &lt;&lt; 5) &amp; 0xbf)</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">            1100 1001         This is the number we&#39;re not supposed to know
+&lt;&lt;                  5
+     ================
+     1 1001 0010 0000
+&amp;           1011 1111         0xbf, the made-up constant
+=====================
+            0010 0000
+^           1100 1001         XOR to the rescue again
+=====================
+            1110 1001         The end result.
+
+To reverse the above, it is essentially the opposite. First, mask off the first
+5 bits as explained here
+
+        1110 1001
+&amp;       0001 1111
+=================
+        0000 1001
+&lt;&lt;              5
+=================
+      1 0010 0000
+&amp;       1011 1111             Now AND it again with the constant
+=================
+      0 0010 0000             And XOR this against the end result
+^       1110 1001
+=================
+        1100 1001
+
+Although it doesn&#39;t seem it, we recovered the right-most 5 bits of the original
+number. We just need to repeat it in an iterative process until we hit the end.
+
+So let&#39;s sally forth!
+
+Mask off the first 5 bits of the above result:
+
+        1100 1001      The result of the above
+&amp;    11 1110 0000      Masking the next 5 bits!
+=================
+     00 1100 0000
+&lt;&lt;              5      Shift it 5 over again
+=================
+ 1 1000 0000 0000
+&amp;       1011 1111      AND it again with the made-up constant
+=================
+   0000 0000 0000
+^       1100 1001      XORing with the result of the first iteration
+=================
+        1100 1001      We have fully recovered the original number!
+</code></pre></div><p>You can see that essentially we are working backwards, incorporating an AND with a constant that can actually be recovered against because after all, we are still XORing against the original number. XOR is fun!</p>
+<p>The python code that I wrote for this is as follows:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">undo_left_shift_and</span>(number, and_constant, shift_len, max_len<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        This function will un-do the left shift function, which is a little bit
+</span><span style="color:#e6db74">        different from the right shift, mostly because there is also an AND function
+</span><span style="color:#e6db74">        performed with two constants. However, due to some logical magic, this is
+</span><span style="color:#e6db74">        able to be un-done.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    result <span style="color:#f92672">=</span> number
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, max_len, shift_len):
+        mask <span style="color:#f92672">=</span> (<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span>shift_len)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>     <span style="color:#75715e"># Create a mask of size shift_len</span>
+        mask <span style="color:#f92672">=</span> mask <span style="color:#f92672">&lt;&lt;</span> i            <span style="color:#75715e"># Shift it over &lt;i&gt; bits</span>
+        part <span style="color:#f92672">=</span> mask <span style="color:#f92672">&amp;</span> result        <span style="color:#75715e"># Create a part var, consisting of bits we masked</span>
+        part <span style="color:#f92672">=</span> part <span style="color:#f92672">&lt;&lt;</span> shift_len    <span style="color:#75715e"># shift it over another shift_len bits</span>
+        anded <span style="color:#f92672">=</span> part <span style="color:#f92672">&amp;</span> and_constant <span style="color:#75715e"># AND the part with the supplied and_constant</span>
+        result <span style="color:#f92672">=</span> result <span style="color:#f92672">^</span> anded     <span style="color:#75715e"># result is XORd with above anded</span>
+    <span style="color:#66d9ef">return</span> result
+</code></pre></div><p>So we now have two powerful tools in hand&hellip;and in theory, we can now &ldquo;untemper&rdquo; the values returned from the <code>extract_number()</code> function in the Mersenne Twister algorithm! To do that, we simply work backward with what we have. And to explain that, I also have python code written explicitly for that, calling on the functions above:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">untemper</span>(number):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        This function works through the process of &#34;untempering&#34; a number
+</span><span style="color:#e6db74">        to place it back into the array to duplicate the (pseudo) random number
+</span><span style="color:#e6db74">        generation.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    res <span style="color:#f92672">=</span> number
+    res <span style="color:#f92672">=</span> undo_right_shift(res, <span style="color:#ae81ff">18</span>)
+    res <span style="color:#f92672">=</span> undo_left_shift_and(res, <span style="color:#ae81ff">0xefc60000</span>, <span style="color:#ae81ff">15</span>)
+    res <span style="color:#f92672">=</span> undo_left_shift_and(res, <span style="color:#ae81ff">0x9d2c5680</span>, <span style="color:#ae81ff">7</span>)
+    res <span style="color:#f92672">=</span> undo_right_shift(res, <span style="color:#ae81ff">11</span>)
+    <span style="color:#66d9ef">return</span> res
+</code></pre></div><p>You didn&rsquo;t think I&rsquo;d show up unarmed to this fight, did you?</p>
+<p>Given any number returned from the MT19937 algorithm, running it through the above functions should return the value <em>that was stored in the MT object&rsquo;s state array</em>. This should pave the way for you, the attacker, to re-create the values within the state array, and begin to predict the next &ldquo;random number&rdquo; from the generator.</p>
+<p><strong>UPDATE</strong>: To see the above theory in action, I created <a href="/crypto/mt-in-action" title="Mersenne Twister Predictor In Action">a separate post</a>.</p>
+<h1 id="in-summary">In Summary</h1>
+<p>I realize this was kind of a deep dive. I don&rsquo;t expect very many people to care this much about random number generators. Does this mean that computers are not to be trusted? Does this mean we are doomed? No such thing exists as an actual random number generator? Should we all quit our jobs and live in solitude off the land, never interacting with the technology that defines us as a species? No. Well maybe. Or&hellip;well no. No! Of COURSE there are better ways to obtain a random number. It&rsquo;s all a matter of finding something that is <em>reasonably difficult to predict</em>. There are some fairly expensive computer hardware devices that measures difficult-to-predict sources of randomness, such as atmospheric interference, radioactive decay measurements of an isotope, and Cloudflare even uses <a href="https://blog.cloudflare.com/lavarand-in-production-the-nitty-gritty-technical-details/">lava lamps</a>. That is so freakin cool, man. <a href="https://www.random.org/">Random.org</a> uses atmospheric interference to return a random number, using cosmic rays that are leftovers of the big bang. Hell, if anyone still has an analog television, tune to an unused channel and watch the static snow. That&rsquo;s atmospheric interference, and a true source of random entropy.</p>
+<p>The bottom line is that PRNGs are good for many things. If you&rsquo;re using them to define an enemy&rsquo;s AI in a game you&rsquo;re coding, that&rsquo;s perfectly fine. If you&rsquo;re using it to generate a key for an encryption mode, then that is absolutely unacceptable. No sir. Don&rsquo;t do it! Bad programmer! PRNG&rsquo;s are exactly that: pseudo random. You cannot expect them to be truly un-predictable. That said, there are significantly better cryptographically-secure PRNGs, and in fact you could probably make MT19937 even better by modifying the tempering function to include a one-way hash which should prevent anything like what I just developed. But the bottom line is that it&rsquo;s still deterministic, and thus still <em>technically possible</em>. So&hellip;keep that in mind I suppose.</p>
+<p>And that, <em>Corey</em>, is why I choose to roll my own dice during D&amp;D, <em>thankyouverymuch</em>.</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>

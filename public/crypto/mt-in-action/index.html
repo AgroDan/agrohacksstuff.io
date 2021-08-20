@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title> Mersenne Twister Predictor In Action &middot; Agr0 Hacks Stuff </title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.80.0" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+
+<link rel="stylesheet" href="https://agrohacksstuff.io/css/nix.css">
+
+
+
+
+
+<link href="https://fonts.googleapis.com/css?family=Inconsolata%7COpen+Sans%7CConcert+One" rel="stylesheet">
+
+
+
+
+
+
+    </head>
+
+    <body>
+        <header>
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse font-header">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+      <a class="navbar-brand" id="green-terminal" href='https://agrohacksstuff.io/'>
+        agr0@agrohacksstuff.io ~ $
+      </a>
+		</div>
+
+		
+		<div class="collapse navbar-collapse" id="navbar-collapse-1">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a href='https://agrohacksstuff.io/'>/home/agr0</a>
+        </li>
+        
+				
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/crypto">~/crypto</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/cheatsheets">~/cheat sheets</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/about">~/about</a>
+            		
+        		</li>
+        		
+				
+				<li class="dropdown">
+                    
+            		<a href="https://agrohacksstuff.io/python">~/python</a>
+            		
+        		</li>
+        		
+
+			</ul>
+		</div>
+	</div>
+</nav>
+</header>
+
+        <div class="flex-wrapper">
+            <div class="container wrapper">
+                <h1><a href="https://agrohacksstuff.io/crypto/mt-in-action/">Mersenne Twister Predictor In Action</a></h1>
+                <span class="post-date">2021-03-28 </span>
+                <div class="post-content">
+                    <p>In a <a href="/crypto/mt" title="Pseudo Random Number Generators (and why you should tread lightly)">previous post</a>, I explained the very broad mechanism of what to do to predict the Mersenne Twister pseudo-random number generator. I only posted the functions but never actually showed them in action. That said, I have spun up some proof-of-concept code to explain how it can be used in practice. Given 624 samples of extracted pseudo-random numbers from one seed, I can re-create the state array and predict every single number generated from this extraction.</p>
+<p>Before I begin however, I don&rsquo;t want to be the first to claim this, as I mentioned this is hardly ground-breaking. If you want code to do this for a CTF or something, <a href="https://github.com/kmyk/mersenne-twister-predictor">kmyk&rsquo;s mersenne twister predictor</a> is a lot more of a mature project you can use. In fact it shows how you can use this against Python&rsquo;s own <code>random</code> library.</p>
+<p>Now, I have a github repository for just this page. Using the code in <a href="https://github.com/AgroDan/MT_shenanigans">this repo</a>, I can first create an MT19937 object, and I will seed it with the value of 31337.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> mersenne
+
+m <span style="color:#f92672">=</span> mersenne<span style="color:#f92672">.</span>MT19937(<span style="color:#ae81ff">31337</span>)
+</code></pre></div><p>Okay. Now I can obtain a pseudo-random number by using <code>m.extract_number()</code>. Using iPython3, I can get the value like so:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">In [3]: m.extract_number()
+Out[3]: 3100331191
+</code></pre></div><p>Based on my last post about this, I mentioned that this extracted number isn&rsquo;t just pulled from the state array. Rather, it&rsquo;s tempered through a series of formulas that make it difficult (but not impossible!) to revert back to its original state. Remember that if it just spits out the numbers in its state array, the array can simply be re-created and used to predict future numbers generated.</p>
+<p>So to refresh, when the <code>extract_number()</code> function is called, these are the gauntlet of tempering functions the number in the state array goes through to bring you a brand new number:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">y <span style="color:#f92672">=</span> state_array[index] <span style="color:#75715e"># assign y to the current number in our state array</span>
+y <span style="color:#f92672">=</span> y <span style="color:#f92672">^</span> ((y <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">11</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xffffffff</span>)
+y <span style="color:#f92672">=</span> y <span style="color:#f92672">^</span> ((y <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">7</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x9d2c5680</span>)
+y <span style="color:#f92672">=</span> y <span style="color:#f92672">^</span> ((y <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">15</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xefc60000</span>)
+y <span style="color:#f92672">=</span> y <span style="color:#f92672">^</span> (y <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">18</span>)
+index <span style="color:#f92672">=</span> index <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+<span style="color:#66d9ef">return</span> y
+</code></pre></div><p>I wrote a couple of functions that work on undoing the right shift, as well as undoing the left shift as well as the AND&rsquo;d number. I went into more detail about the specifics in the previous post, but for the sake of preservation, these are the two functions specific to undoing the above:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">undo_right_shift</span>(number, shift_len, max_len<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        This function will un-do the right shift function performed in the
+</span><span style="color:#e6db74">        extract_number() function in the Mersenne Twister. This is integral
+</span><span style="color:#e6db74">        in building the state array to re-create the algorithm.
+</span><span style="color:#e6db74">        number := the original number
+</span><span style="color:#e6db74">        shift_len := the shift length stated in this function
+</span><span style="color:#e6db74">        max_len := the size length of the random number stored. 32 bits is default.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    result <span style="color:#f92672">=</span> number
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, max_len, shift_len):
+        mask <span style="color:#f92672">=</span> ((<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span>shift_len)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)     <span style="color:#75715e"># Create a mask of size shift_len</span>
+        mask <span style="color:#f92672">&lt;&lt;=</span> (max_len<span style="color:#f92672">-</span>shift_len)  <span style="color:#75715e"># shift mask over specified amount of times</span>
+        mask <span style="color:#f92672">&gt;&gt;=</span> i                    <span style="color:#75715e"># mask moved over more for specificity</span>
+        pulled <span style="color:#f92672">=</span> result <span style="color:#f92672">&amp;</span> mask        <span style="color:#75715e"># Pull the number from the result w/ the mask</span>
+        pulled <span style="color:#f92672">&gt;&gt;=</span> shift_len          <span style="color:#75715e"># shift pulled over shift_len</span>
+        result <span style="color:#f92672">^=</span> pulled              <span style="color:#75715e"># XOR result with pulled</span>
+    <span style="color:#66d9ef">return</span> result
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">undo_left_shift_and</span>(number, and_constant, shift_len, max_len<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        This function will un-do the left shift function, which is a little bit
+</span><span style="color:#e6db74">        different from the right shift, mostly because there is also an AND function
+</span><span style="color:#e6db74">        performed with two constants. However, due to some logical magic, this is
+</span><span style="color:#e6db74">        able to be un-done.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    result <span style="color:#f92672">=</span> number
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, max_len, shift_len):
+        mask <span style="color:#f92672">=</span> (<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span>shift_len)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>     <span style="color:#75715e"># Create a mask of size shift_len</span>
+        mask <span style="color:#f92672">=</span> mask <span style="color:#f92672">&lt;&lt;</span> i                  <span style="color:#75715e"># Shift it over &lt;i&gt; bits</span>
+        part <span style="color:#f92672">=</span> mask <span style="color:#f92672">&amp;</span> result        <span style="color:#75715e"># Create a part var, consisting of bits we masked</span>
+        part <span style="color:#f92672">=</span> part <span style="color:#f92672">&lt;&lt;</span> shift_len          <span style="color:#75715e"># shift it over another shift_len bits</span>
+        anded <span style="color:#f92672">=</span> part <span style="color:#f92672">&amp;</span> and_constant <span style="color:#75715e"># AND the part with the supplied and_constant</span>
+        result <span style="color:#f92672">=</span> result <span style="color:#f92672">^</span> anded             <span style="color:#75715e"># result is XORd with above anded</span>
+    <span style="color:#66d9ef">return</span> result
+</code></pre></div><p>Now with these functions in our arsenal, I will go over step-by-step to recreate that number from the state array. Given the extracted number from before, I will use <code>3100331191</code>. And the first formula to undo should be: <code>y = y ^ (y &gt;&gt; 18)</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># The number the function requires is what we have so far (3100331191), and</span>
+<span style="color:#75715e"># the shift_len refers to how many bits are shifted right. In this case, it</span>
+<span style="color:#75715e"># is 18 bits.</span>
+
+step1 <span style="color:#f92672">=</span> untwist<span style="color:#f92672">.</span>undo_right_shift(<span style="color:#ae81ff">3100331191</span>, <span style="color:#ae81ff">18</span>)
+</code></pre></div><p>The value of step1 becomes: <code>3100336773</code>. Now the next formula in line is: <code>y = y ^ ((y &lt;&lt; 15) &amp; 0xefc60000)</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># In this case, the &#39;number&#39; is 3100336773, the and_constant is 0xefc60000,</span>
+<span style="color:#75715e"># and shift_len is 15. I can use the &#34;step1&#34; variable, but for clarity I will</span>
+<span style="color:#75715e"># use the straight up value.</span>
+
+step2 <span style="color:#f92672">=</span> untwist<span style="color:#f92672">.</span>undo_left_shift_and(<span style="color:#ae81ff">3100336773</span>, <span style="color:#ae81ff">0xefc60000</span>, <span style="color:#ae81ff">15</span>)
+</code></pre></div><p>The value of step1 becomes: <code>428434053</code>. Next formula is another left-shift-and: <code>y = y ^ ((y &lt;&lt; 7) &amp; 0x9d2c5680)</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">step3 <span style="color:#f92672">=</span> untwist<span style="color:#f92672">.</span>undo_left_shift_and(<span style="color:#ae81ff">428434053</span>, <span style="color:#ae81ff">0x9d2c5680</span>, <span style="color:#ae81ff">7</span>)
+</code></pre></div><p>Step3 is now <code>2376687621</code>. The final formula is <code>y = y ^ ((y &gt;&gt; 11) &amp; 0xffffffff)</code>, which is a right-shift as well as an AND against a 32-bit mask, which doesn&rsquo;t actually do anything of any significance to the result of the right-shift, so we don&rsquo;t need to add anything new to the undo-right-shift code to accommodate it.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">step4 <span style="color:#f92672">=</span> untwist<span style="color:#f92672">.</span>undo_right_shift(<span style="color:#ae81ff">2376687621</span>, <span style="color:#ae81ff">11</span>)
+</code></pre></div><p>And finally, step4 has the value: <code>2377701151</code>. This is the final formula, and if we did everything right, step4 should be equal to <code>m.MT[0]</code>. Using iPython3, I can show this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">In [1]: import mersenne, untwist
+
+In [2]: m = mersenne.MT19937(31337)
+
+In [3]: m.extract_number()
+Out[3]: 3100331191
+
+In [4]: untwist.undo_right_shift(3100331191, 18)
+Out[4]: 3100336773
+
+In [5]: untwist.undo_left_shift_and(3100336773, 0xefc60000, 15)
+Out[5]: 428434053
+
+In [6]: untwist.undo_left_shift_and(428434053, 0x9d2c5680, 7)
+Out[6]: 2376687621
+
+In [7]: untwist.undo_right_shift(2376687621, 11)
+Out[7]: 2377701151
+
+In [8]: m.MT[0]
+Out[8]: 2377701151
+</code></pre></div><p>Done! So to wrap that all up into one function that performs all those untempering functions, I wrote <code>untemper()</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">untemper</span>(number):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">        This function works through the process of &#34;untempering&#34; a number
+</span><span style="color:#e6db74">        to place it back into the array to duplicate the (pseudo) random number
+</span><span style="color:#e6db74">        generation.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    res <span style="color:#f92672">=</span> number
+    res <span style="color:#f92672">=</span> undo_right_shift(res, <span style="color:#ae81ff">18</span>)
+    res <span style="color:#f92672">=</span> undo_left_shift_and(res, <span style="color:#ae81ff">0xefc60000</span>, <span style="color:#ae81ff">15</span>)
+    res <span style="color:#f92672">=</span> undo_left_shift_and(res, <span style="color:#ae81ff">0x9d2c5680</span>, <span style="color:#ae81ff">7</span>)
+    res <span style="color:#f92672">=</span> undo_right_shift(res, <span style="color:#ae81ff">11</span>)
+    <span style="color:#66d9ef">return</span> res
+</code></pre></div><p>Now, all I need to do is write some code to read in the next 623 iterations of the PRNG, untemper them all, and then I can rebuild my own state array!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Import our untwist module</span>
+<span style="color:#f92672">import</span> untwist
+
+<span style="color:#75715e"># just for preservation, I will save the result of that first extraction</span>
+first_ext <span style="color:#f92672">=</span> <span style="color:#ae81ff">2377701151</span>
+
+<span style="color:#75715e"># Now extract the next 623 numbers</span>
+e_nums <span style="color:#f92672">=</span> [m<span style="color:#f92672">.</span>extract_number() <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">623</span>)]
+
+<span style="color:#75715e"># Untemper all of these numbers</span>
+u_nums <span style="color:#f92672">=</span> [untwist<span style="color:#f92672">.</span>untemper(i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> e_nums]
+
+<span style="color:#75715e"># Don&#39;t forget to stuff that first number at the top</span>
+u_nums <span style="color:#f92672">=</span> [first_ext] <span style="color:#f92672">+</span> u_nums
+
+<span style="color:#75715e"># Our new state array is u_nums! We can create a new MT19937 object</span>
+<span style="color:#75715e"># and mess with some of the internals because python</span>
+
+x <span style="color:#f92672">=</span> mersenne<span style="color:#f92672">.</span>MT19937(<span style="color:#ae81ff">0</span>)    <span style="color:#75715e"># doesn&#39;t matter what I seed it to</span>
+x<span style="color:#f92672">.</span>MT <span style="color:#f92672">=</span> [i <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> u_nums] <span style="color:#75715e"># Rebuild the state array</span>
+x<span style="color:#f92672">.</span>index <span style="color:#f92672">=</span> <span style="color:#ae81ff">624</span>              <span style="color:#75715e"># set the correct index</span>
+
+<span style="color:#75715e"># Our new object, x, is the exact same MT19937 object as m, sharing the</span>
+<span style="color:#75715e"># same state!</span>
+
+x<span style="color:#f92672">.</span>extract_number()
+m<span style="color:#f92672">.</span>extract_number()
+<span style="color:#75715e"># returns 4157184560 for both</span>
+</code></pre></div><p>I created a function that encapsulates the above as an object. Simply run <code>untwist.preseed([&lt;state array&gt;])</code> and it will return a MT19937() object with that new state array as I&rsquo;ve done here.</p>
+
+                </div>
+                
+                <div class="post-comments">
+                    
+                </div>
+                
+            </div>
+            <footer class="footer text-center">
+<p>Copyright &copy; 2021 Agr0 -
+<span class="credit">
+	Powered by
+	<a target="_blank" href="https://gohugo.io">Hugo</a>
+	and
+	<a target="_blank" href="https://github.com/LordMathis/hugo-theme-nix/">Nix</a> theme.
+</span>
+</p>
+</footer>
+
+        </div>
+    </body>
